@@ -12,6 +12,13 @@ type UserRepository struct {
 	db *sql.DB
 }
 
+// NewUserRepository creates a new UserRepository instance.
+func NewUserRepository(db *sql.DB) *UserRepository {
+	return &UserRepository{
+		db: db,
+	}
+}
+
 func (r *UserRepository) CreateUser(ctx context.Context, user *domain.User) error {
 	_, err := r.db.ExecContext(
 		ctx,
@@ -24,11 +31,4 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *domain.User) erro
 	)
 
 	return err
-}
-
-// NewUserRepository creates a new UserRepository instance
-func NewUserRepository(db *sql.DB) *UserRepository {
-	return &UserRepository{
-		db: db,
-	}
 }
