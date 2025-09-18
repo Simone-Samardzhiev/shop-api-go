@@ -11,10 +11,10 @@ type UserRole string
 
 // UserRole enum values.
 const (
-	Admin     UserRole = "Admin"
-	Client    UserRole = "Client"
-	Delivery  UserRole = "Delivery"
-	Warehouse UserRole = "Warehouse"
+	Admin     UserRole = "admin"
+	Client    UserRole = "client"
+	Delivery  UserRole = "delivery"
+	Warehouse UserRole = "warehouse"
 )
 
 // User is an entity representing a user.
