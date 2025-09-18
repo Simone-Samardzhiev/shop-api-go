@@ -16,4 +16,5 @@ migrate-down:
 
 .PHONY: start
 start:
-	@go run ./cmd/api/main.go
+	@go build -o ./bin/http cmd/http/main.go
+	@./bin/http
