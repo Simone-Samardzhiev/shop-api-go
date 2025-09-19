@@ -20,7 +20,7 @@ func NewUserService(ur repository.UserRepository) *UserService {
 	return &UserService{ur: ur}
 }
 
-func (s *UserService) Register(ctx context.Context, user *domain.User) (domain.User, error) {
+func (s *UserService) Register(ctx context.Context, user *domain.User) (*domain.User, error) {
 	now := time.Now()
 	user.CreatedAt = now
 	user.UpdatedAt = now
@@ -28,13 +28,13 @@ func (s *UserService) Register(ctx context.Context, user *domain.User) (domain.U
 	user.Id = uuid.New()
 	hash, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return domain.User{}, err
+		return nil, err
 	}
 	user.Password = string(hash)
 
 	err = s.ur.CreateUser(ctx, user)
 	if err != nil {
-		return domain.User{}, err
+		return nil, err
 	}
-	return *user, nil
+	return user, nil
 }
