@@ -3,7 +3,10 @@ package repository
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"shop-api-go/internal/core/domain"
+
+	"github.com/lib/pq"
 )
 
 // UserRepository implements port.UserRepository and provides
@@ -30,5 +33,21 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *domain.User) erro
 		user.Password,
 	)
 
-	return err
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			if pqErr.Code == "23505" {
+				switch pqErr.Constraint {
+				case "users_username_key":
+					return domain.ErrUsernameAlreadyInUse
+				case "users_email_key":
+					return domain.ErrEmailAlreadyInUse
+				}
+			}
+		}
+
+		return domain.ErrInternalServerError
+	}
+
+	return nil
 }
