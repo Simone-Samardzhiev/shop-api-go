@@ -19,6 +19,7 @@ func NewRouter(userHandler *UserHandler) *Router {
 
 	r := gin.Default()
 	v1 := r.Group("/api/v1")
+	v1.Use(errorHandler())
 	{
 		user := v1.Group("/users")
 		{
