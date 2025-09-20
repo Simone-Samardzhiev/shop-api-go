@@ -1,11 +1,43 @@
-package validation
+package http
 
 import (
+	"strconv"
 	"unicode"
 
-	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 )
+
+// validateMinBytesLength is a function that implement validator.FieldLevel interface
+// and varifies that length of the word is not less than the provided length.
+func validateMinBytesLength(fl validator.FieldLevel) bool {
+	word := fl.Field().String()
+	params := fl.Param()
+
+	count, err := strconv.Atoi(params)
+	if err != nil {
+		return false
+	}
+	if len(word) < count {
+		return false
+	}
+	return true
+}
+
+// validateMaxBytesLength is a function that implement validator.FieldLevel interface
+// and varifies that length of the word is not more than the provided length.
+func validateMaxBytesLength(fl validator.FieldLevel) bool {
+	word := fl.Field().String()
+	params := fl.Param()
+
+	count, err := strconv.Atoi(params)
+	if err != nil {
+		return false
+	}
+	if len(word) > count {
+		return false
+	}
+	return true
+}
 
 // isValidPassword checks whether the given password meets the following criteria:
 //
@@ -47,15 +79,8 @@ func isValidPassword(password string) bool {
 }
 
 // validatePassword is a wrapper for isValidPassword that implements the
-// validator.FieldLevel interface. It is registered as a custom "password" validator
-// tag in Gin's binding.Validator.
+// validator.FieldLevel interface.
 func validatePassword(fl validator.FieldLevel) bool {
 	password := fl.Field().String()
 	return isValidPassword(password)
-}
-
-func init() {
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		_ = v.RegisterValidation("password", validatePassword)
-	}
 }
