@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"shop-api-go/internal/core/domain"
 
 	"github.com/lib/pq"
@@ -46,7 +47,7 @@ func (r *UserRepository) CreateUser(ctx context.Context, user *domain.User) erro
 			}
 		}
 
-		return domain.ErrInternalServerError
+		return fmt.Errorf("%w: %v", domain.ErrInternalServerError, err)
 	}
 
 	return nil
