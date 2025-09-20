@@ -1,12 +1,31 @@
 package domain
 
-import "errors"
+import (
+	"errors"
+	"net/http"
+)
+
+// Error represent a domain-level error.
+type Error struct {
+	Code       string
+	StatusCode int
+	Err        error
+}
+
+// NewError creates a new Error instance.
+func NewError(code string, err error, statusCode int) *Error {
+	return &Error{Code: code, Err: err, StatusCode: statusCode}
+}
+
+func (e *Error) Error() string {
+	return e.Err.Error()
+}
 
 var (
 	// ErrInternalServerError is an error for when the service fails to process the request.
-	ErrInternalServerError = errors.New("internal server error")
+	ErrInternalServerError = NewError("INTERNAL_SERVER_ERROR", errors.New("internal server error"), http.StatusInternalServerError)
 	// ErrEmailAlreadyInUse is an error for when user's email conflicts with another.
-	ErrEmailAlreadyInUse = errors.New("email already in use")
+	ErrEmailAlreadyInUse = NewError("EMAIL_ALREADY_EXIST", errors.New("email already in use"), http.StatusConflict)
 	// ErrUsernameAlreadyInUse is an error for when user's username conflicts with another.
-	ErrUsernameAlreadyInUse = errors.New("username already in use")
+	ErrUsernameAlreadyInUse = NewError("USERNAME_ALREADY_EXIST", errors.New("username already exist"), http.StatusConflict)
 )
