@@ -31,10 +31,5 @@ func (s *UserService) Register(ctx context.Context, user *domain.User) error {
 		return domain.ErrInternalServerError
 	}
 	user.Password = string(hash)
-
-	err = s.ur.CreateUser(ctx, user)
-	if err != nil {
-		return domain.ErrInternalServerError
-	}
-	return nil
+	return s.ur.CreateUser(ctx, user)
 }
