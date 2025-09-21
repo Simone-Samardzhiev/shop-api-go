@@ -27,3 +27,16 @@ type User struct {
 	CreatedAt time.Time
 	UpdatedAt time.Time
 }
+
+// NewUser create a new User instance.
+func NewUser(id uuid.UUID, username, email, password string, role UserRole, createdAt, UpdatedAt time.Time) *User {
+	return &User{
+		Id:        id,
+		Username:  username,
+		Email:     email,
+		Password:  password,
+		Role:      role,
+		CreatedAt: createdAt,
+		UpdatedAt: UpdatedAt,
+	}
+}
