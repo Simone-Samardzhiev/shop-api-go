@@ -23,7 +23,7 @@ func NewUserRepository(db *sql.DB) *UserRepository {
 	}
 }
 
-func (r *UserRepository) CreateUser(ctx context.Context, user *domain.User) error {
+func (r *UserRepository) AddUser(ctx context.Context, user *domain.User) error {
 	_, err := r.db.ExecContext(
 		ctx,
 		`INSERT INTO users (id, username, email, password)

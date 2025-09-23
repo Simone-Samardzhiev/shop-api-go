@@ -7,8 +7,8 @@ import (
 
 // UserRepository is an interface for interacting with user-related data.
 type UserRepository interface {
-	// CreateUser inserts a new user into the database.
-	CreateUser(ctx context.Context, user *domain.User) error
+	// AddUser inserts a new user into the database.
+	AddUser(ctx context.Context, user *domain.User) error
 }
 
 // UserService is an interface for interacting with user-related business logic.

@@ -17,17 +17,17 @@ func TestUserService_Register(t *testing.T) {
 	ctx := context.Background()
 	id := uuid.New()
 	// Success case
-	mockRepo.On("CreateUser", ctx, tmock.MatchedBy(func(u *domain.User) bool {
+	mockRepo.On("AddUser", ctx, tmock.MatchedBy(func(u *domain.User) bool {
 		return u.Email == "email" && u.Username == "username"
 	})).Return(nil)
 
 	// Duplicate email case
-	mockRepo.On("CreateUser", ctx, tmock.MatchedBy(func(u *domain.User) bool {
+	mockRepo.On("AddUser", ctx, tmock.MatchedBy(func(u *domain.User) bool {
 		return u.Email == "duplicate"
 	})).Return(domain.ErrEmailAlreadyInUse)
 
 	// Duplicate username case
-	mockRepo.On("CreateUser", ctx, tmock.MatchedBy(func(u *domain.User) bool {
+	mockRepo.On("AddUser", ctx, tmock.MatchedBy(func(u *domain.User) bool {
 		return u.Username == "duplicate"
 	})).Return(domain.ErrUsernameAlreadyInUse)
 
