@@ -4,8 +4,8 @@ import (
 	"log"
 	"shop-api-go/internal/adapter/config"
 	"shop-api-go/internal/adapter/handler/http"
-	"shop-api-go/internal/adapter/storage"
-	"shop-api-go/internal/adapter/storage/repository"
+	"shop-api-go/internal/adapter/storage/postgres"
+	"shop-api-go/internal/adapter/storage/postgres/repository"
 	"shop-api-go/internal/core/service"
 
 	_ "github.com/lib/pq"
@@ -17,7 +17,7 @@ func main() {
 		log.Fatalf("Error loading config: %v", err)
 	}
 
-	db, err := storage.New(container.Database)
+	db, err := postgres.New(container.Database)
 	if err != nil {
 		log.Fatalf("Error connecting to database: %v", err)
 	}
