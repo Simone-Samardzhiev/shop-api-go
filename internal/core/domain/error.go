@@ -28,4 +28,5 @@ var (
 	ErrEmailAlreadyInUse = NewError("EMAIL_ALREADY_EXIST", errors.New("email already in use"), http.StatusConflict)
 	// ErrUsernameAlreadyInUse is an error for when user's username conflicts with another.
 	ErrUsernameAlreadyInUse = NewError("USERNAME_ALREADY_EXIST", errors.New("username already exist"), http.StatusConflict)
+	ErrInvalidToken         = NewError("INVALID_TOKEN", errors.New("invalid token"), http.StatusBadRequest)
 )

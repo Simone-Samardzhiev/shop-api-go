@@ -5,16 +5,20 @@ import (
 	"fmt"
 	"net/http"
 	"shop-api-go/internal/core/domain"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/golang-jwt/jwt/v5"
 )
 
+// ErrorResponse represents a json response when an error occurs.
 type ErrorResponse struct {
 	Code     string   `json:"code"`
 	Messages []string `json:"messages"`
 }
 
+// parseValidationError transform a validator.FieldError into meaningful message.
 func parseValidationError(err validator.FieldError) string {
 	switch err.Tag() {
 	case "required":
@@ -32,6 +36,7 @@ func parseValidationError(err validator.FieldError) string {
 	}
 }
 
+// errorHandler is globar error handler that responds with propper error response if an error occurred.
 func errorHandler() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
@@ -62,5 +67,41 @@ func errorHandler() gin.HandlerFunc {
 			}
 
 		}
+	}
+}
+
+// jwtMiddleware middleware is used to validate a JWT token and pass it down the chain.
+func jwtMiddleware(key string, secret []byte, role domain.UserRole) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		header := c.GetHeader("Authorization")
+		if header == "" || !strings.HasPrefix(header, "Bearer ") {
+			_ = c.Error(domain.ErrInvalidToken)
+			c.Abort()
+			return
+		}
+
+		tokenStr := strings.TrimPrefix(header, "Bearer ")
+
+		token, err := jwt.ParseWithClaims(tokenStr, &domain.Token{}, func(token *jwt.Token) (any, error) {
+			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+				return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+			}
+			return secret, nil
+		})
+		if err != nil {
+			_ = c.Error(fmt.Errorf("%w: %v", domain.ErrInvalidToken, err))
+			c.Abort()
+			return
+		}
+
+		parsedToken, ok := token.Claims.(*domain.Token)
+		if !ok || !token.Valid || parsedToken.UserRole != role {
+			_ = c.Error(fmt.Errorf("%w: %v", domain.ErrInvalidToken, "invalid token"))
+			c.Abort()
+			return
+		}
+
+		c.Set(key, parsedToken)
+		c.Next()
 	}
 }
