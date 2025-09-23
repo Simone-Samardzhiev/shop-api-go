@@ -6,7 +6,7 @@ import (
 )
 
 // New opens a new connection to sql.DB.
-func New(config *config.Database) (*sql.DB, error) {
+func New(config *config.DBConfig) (*sql.DB, error) {
 	db, err := sql.Open("postgres", config.Url)
 	if err != nil {
 		return nil, err
@@ -16,7 +16,7 @@ func New(config *config.Database) (*sql.DB, error) {
 		return nil, err
 	}
 
-	db.SetMaxIdleConns(config.MaxIdleConnection)
+	db.SetMaxIdleConns(config.MaxIdleConnections)
 	db.SetMaxOpenConns(config.MaxOpenConnections)
 	return db, nil
 }
