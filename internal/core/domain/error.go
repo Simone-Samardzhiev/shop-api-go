@@ -28,5 +28,10 @@ var (
 	ErrEmailAlreadyInUse = NewError("EMAIL_ALREADY_EXIST", errors.New("email already in use"), http.StatusConflict)
 	// ErrUsernameAlreadyInUse is an error for when user's username conflicts with another.
 	ErrUsernameAlreadyInUse = NewError("USERNAME_ALREADY_EXIST", errors.New("username already exist"), http.StatusConflict)
-	ErrInvalidToken         = NewError("INVALID_TOKEN", errors.New("invalid token"), http.StatusBadRequest)
+	// ErrInvalidToken is an error for when token parsing fails.
+	ErrInvalidToken = NewError("INVALID_TOKEN", errors.New("invalid token"), http.StatusBadRequest)
+	// ErrInvalidTokenType is an error for when user use invalid token type.
+	ErrInvalidTokenType = NewError("INVALID_TOKEN_TYPE", errors.New("invalid token type"), http.StatusBadRequest)
+	// ErrMalformedToken is an error for when token data is invalid.
+	ErrMalformedToken = NewError("INVALID_TOKEN_SUBJECT", errors.New("invalid token subject"), http.StatusBadRequest)
 )
