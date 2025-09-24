@@ -24,6 +24,17 @@ type Token struct {
 	ExpiresAt time.Time
 }
 
+// NewToken creates a new Token instance.
+func NewToken(id, userId uuid.UUID, userRole UserRole, tokenType TokenType, expires time.Time) *Token {
+	return &Token{
+		Id:        id,
+		UserId:    userId,
+		TokenType: tokenType,
+		UserRole:  userRole,
+		ExpiresAt: expires,
+	}
+}
+
 // TokenGroup is an entity representing a group of signed access and refresh token.
 type TokenGroup struct {
 	AccessToken  string
