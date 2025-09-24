@@ -1,6 +1,6 @@
 include .env
 
-MIGRATIONS_PATH=./internal/adapter/storage/migrations
+MIGRATIONS_PATH=./internal/adapter/storage/postgres/migrations
 
 .PHONY: migrate-create
 migrate-create:
