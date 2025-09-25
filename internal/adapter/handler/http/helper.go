@@ -111,7 +111,7 @@ func handleBindingError(c *gin.Context, err error) {
 	)
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"code":    "INVALID_ENTITY",
-		"message": messages,
+		"code":     "INVALID_ENTITY",
+		"messages": messages,
 	})
 }
