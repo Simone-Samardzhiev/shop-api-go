@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"fmt"
 	"shop-api-go/internal/adapter/config"
 
 	"go.uber.org/zap"
@@ -10,15 +9,13 @@ import (
 var logger *zap.Logger
 
 // SetLogger sets Logger based on the passed config.AppConfig.
-func SetLogger(config *config.AppConfig) error {
+func SetLogger(appConfig *config.AppConfig) error {
 	var err error
-	switch config.Environment {
-	case "development":
-		logger, err = zap.NewDevelopment()
-	case "production":
+	switch appConfig.Environment {
+	case config.Production:
 		logger, err = zap.NewProduction()
-	default:
-		err = fmt.Errorf("unknown logger environment: %s", config.Environment)
+	case config.Development:
+		logger, err = zap.NewDevelopment()
 	}
 
 	zap.ReplaceGlobals(logger)
