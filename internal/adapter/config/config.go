@@ -41,11 +41,18 @@ func getEnvDuration(key string, fallback time.Duration) time.Duration {
 }
 
 type (
-	// AppConfig contains all environment variables.
-	AppConfig struct {
+	// Container contains all environment variables.
+	Container struct {
+		App      *AppConfig
 		Database *DBConfig
 		JWT      *JWTConfig
 	}
+	// AppConfig contains all environment variable for the application.
+	AppConfig struct {
+		Environment string
+		Port        string
+	}
+
 	// DBConfig contains all environment variables for the database.
 	DBConfig struct {
 		Url                string
@@ -63,8 +70,8 @@ type (
 	}
 )
 
-// New creates a new AppConfig instance.
-func New() (*AppConfig, error) {
+// New creates a new Container instance.
+func New() (*Container, error) {
 	err := godotenv.Load()
 	if err != nil {
 		return nil, err
@@ -97,7 +104,11 @@ func New() (*AppConfig, error) {
 		return nil, fmt.Errorf("jwt access token expire time must be > 0: %d", accessTokenExpireTime)
 	}
 
-	return &AppConfig{
+	return &Container{
+		App: &AppConfig{
+			Environment: getEnv("ENVIRONMENT", "development"),
+			Port:        getEnv("PORT", "8080"),
+		},
 		Database: &DBConfig{
 			Url:                getEnv("DATABASE_URL", ""),
 			MaxOpenConnections: maxOpenConnections,
