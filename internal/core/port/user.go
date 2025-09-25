@@ -9,6 +9,8 @@ import (
 type UserRepository interface {
 	// AddUser inserts a new user into the database.
 	AddUser(ctx context.Context, user *domain.User) error
+	// GetUserByUsername fetches a user by specific username.
+	GetUserByUsername(ctx context.Context, username string) (*domain.User, error)
 }
 
 // UserService is an interface for interacting with user-related business logic.

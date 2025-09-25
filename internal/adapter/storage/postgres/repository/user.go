@@ -52,3 +52,23 @@ func (r *UserRepository) AddUser(ctx context.Context, user *domain.User) error {
 
 	return nil
 }
+
+func (r *UserRepository) GetUserByUsername(ctx context.Context, username string) (*domain.User, error) {
+	var user domain.User
+	row := r.db.QueryRowContext(
+		ctx,
+		`SELECT id, username, email, password, role FROM users
+                WHERE username = $1`,
+		username,
+	)
+
+	err := row.Scan(&user.Id, &user.Username, &user.Email, &user.Password, &user.Role)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, domain.ErrWrongCredentials
+		} else {
+			return nil, fmt.Errorf("%w: %v", domain.ErrInternalServerError, err)
+		}
+	}
+	return &user, nil
+}
