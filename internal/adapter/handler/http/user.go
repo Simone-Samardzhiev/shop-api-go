@@ -30,7 +30,7 @@ type registerRequest struct {
 func (uh *UserHandler) Register(c *gin.Context) {
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		_ = c.Error(err)
+		handleBindingError(c, err)
 		return
 	}
 
@@ -40,7 +40,8 @@ func (uh *UserHandler) Register(c *gin.Context) {
 		Password: req.Password,
 	})
 	if err != nil {
-		_ = c.Error(err)
+		handleError(c, err)
+		return
 	}
 
 	c.Status(http.StatusCreated)
