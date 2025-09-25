@@ -26,7 +26,7 @@ func main() {
 
 	db, err := postgres.New(container.Database)
 	if err != nil {
-		zap.L().Error("Error connecting to database", zap.Error(err))
+		zap.L().Fatal("Error connecting to database", zap.Error(err))
 	}
 
 	userRepository := repository.NewUserRepository(db)
