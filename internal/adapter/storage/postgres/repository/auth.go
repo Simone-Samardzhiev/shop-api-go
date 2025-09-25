@@ -3,8 +3,9 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"shop-api-go/internal/core/domain"
+
+	"go.uber.org/zap"
 )
 
 // TokenRepository implements port.TokenRepository and provides
@@ -29,7 +30,15 @@ func (t *TokenRepository) AddToken(ctx context.Context, token *domain.Token) err
 		token.ExpiresAt,
 	)
 	if err != nil {
-		return fmt.Errorf("%w: %v", domain.ErrInternalServerError, err)
+		zap.L().Error("postgres/TokenRepository.AddToken failed",
+			zap.String("tokenId", token.Id.String()),
+			zap.String("userId", token.UserId.String()),
+			zap.String("tokenType", string(token.TokenType)),
+			zap.String("userRole", string(token.UserRole)),
+			zap.String("expiresAt", token.ExpiresAt.String()),
+			zap.Error(err),
+		)
+		return domain.ErrInternalServerError
 	}
 	return nil
 }
@@ -37,7 +46,8 @@ func (t *TokenRepository) AddToken(ctx context.Context, token *domain.Token) err
 func (t *TokenRepository) DeleteExpiredToken() error {
 	_, err := t.db.Exec("DELETE FROM tokens WHERE expires < NOW()")
 	if err != nil {
-		return fmt.Errorf("%w: %v", domain.ErrInternalServerError, err)
+		zap.L().Error("postgres/TokenRepository.DeleteExpiredToken failed", zap.Error(err))
+		return domain.ErrInternalServerError
 	}
 	return nil
 }

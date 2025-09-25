@@ -1,13 +1,13 @@
 package jwt
 
 import (
-	"fmt"
 	"shop-api-go/internal/adapter/config"
 	"shop-api-go/internal/core/domain"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
+	"go.uber.org/zap"
 )
 
 // claims represent JWT token.
@@ -37,7 +37,11 @@ func (t *TokenGenerator) SignToken(token *domain.Token) (string, error) {
 	case domain.RefreshToken:
 		exp = t.config.RefreshTokenExpireTime
 	default:
-		return "", domain.ErrInvalidTokenType
+		zap.L().Error(
+			"JWT signing failed",
+			zap.String("tokenType", string(token.TokenType)),
+		)
+		return "", domain.ErrInternalServerError
 	}
 
 	jwtClaims := claims{
@@ -60,13 +64,16 @@ func (t *TokenGenerator) SignToken(token *domain.Token) (string, error) {
 func (t *TokenGenerator) ParseToken(token string) (*domain.Token, error) {
 	parsedToken, err := jwt.ParseWithClaims(token, &claims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("%w: invalid signing method %v", domain.ErrInvalidToken, token.Header["alg"])
+			zap.L().Error("Unexpected signing method",
+				zap.String("method", token.Method.Alg()),
+			)
+			return nil, domain.ErrInvalidToken
 		}
 		return t.config.Secret, nil
 	})
 
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", domain.ErrInvalidToken, err)
+		return nil, domain.ErrInvalidToken
 	}
 
 	jwtClaims, ok := parsedToken.Claims.(*claims)

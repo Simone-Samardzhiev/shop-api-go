@@ -17,9 +17,9 @@ func NewRouter(userHandler *UserHandler) *Router {
 		_ = v.RegisterValidation("max_bytes", validateMaxBytesLength)
 	}
 
-	r := gin.Default()
+	r := gin.New()
+	r.Use(gin.Recovery())
 	v1 := r.Group("/api/v1")
-	v1.Use(errorHandler())
 	{
 		user := v1.Group("/users")
 		{

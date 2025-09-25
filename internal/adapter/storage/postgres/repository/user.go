@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"shop-api-go/internal/core/domain"
 
 	"github.com/lib/pq"
+	"go.uber.org/zap"
 )
 
 // UserRepository implements port.UserRepository and provides
@@ -43,13 +43,23 @@ func (r *UserRepository) AddUser(ctx context.Context, user *domain.User) error {
 					return domain.ErrUsernameAlreadyInUse
 				case "users_email_key":
 					return domain.ErrEmailAlreadyInUse
+				default:
+					zap.L().Error("postgres/UserRepository.AddUser failed",
+						zap.String("id", user.Id.String()),
+						zap.String("username", user.Username),
+						zap.String("email", user.Email),
+						zap.String("createdAt", user.CreatedAt.String()),
+						zap.String("updatedAt", user.UpdatedAt.String()),
+						zap.Error(err),
+					)
+					return domain.ErrInternalServerError
 				}
 			}
+		} else {
+			zap.L().Error("postgres/UserRepository.AddUser failed", zap.Error(err))
+			return domain.ErrInternalServerError
 		}
-
-		return fmt.Errorf("%w: %v", domain.ErrInternalServerError, err)
 	}
-
 	return nil
 }
 
@@ -67,7 +77,11 @@ func (r *UserRepository) GetUserByUsername(ctx context.Context, username string)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrWrongCredentials
 		} else {
-			return nil, fmt.Errorf("%w: %v", domain.ErrInternalServerError, err)
+			zap.L().Error("postgres/UserRepository.GetUserByUsername failed",
+				zap.String("username", username),
+				zap.Error(err),
+			)
+			return nil, domain.ErrInternalServerError
 		}
 	}
 	return &user, nil
