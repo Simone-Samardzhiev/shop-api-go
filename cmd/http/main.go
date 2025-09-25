@@ -29,11 +29,28 @@ func main() {
 		zap.L().Fatal("Error connecting to database", zap.Error(err))
 	}
 
+	zap.L().Info("Environment variables",
+		zap.Dict("appConfig",
+			zap.String("environment", string(container.App.Environment)),
+			zap.String("port", container.App.Port),
+		),
+		zap.Dict("dbConfig",
+			zap.Int("maxIdleConnections", container.Database.MaxIdleConnections),
+			zap.Int("maxOpenConnections", container.Database.MaxOpenConnections),
+		),
+		zap.Dict("jwtConfig",
+			zap.String("issuer", container.JWT.Issuer),
+			zap.String("audience", container.JWT.Audience),
+			zap.Duration("refreshTokenExpireTime", container.JWT.RefreshTokenExpireTime),
+			zap.Duration("accessTokenExpireTime", container.JWT.AccessTokenExpireTime),
+		),
+	)
+
 	userRepository := repository.NewUserRepository(db)
 	userService := service.NewUserService(userRepository)
 	userHandler := http.NewUserHandler(userService)
 
-	router := http.NewRouter(userHandler)
+	router := http.NewRouter(container.App, userHandler)
 	err = router.Start(container.App.Port)
 	if err != nil {
 		zap.L().Error("Error starting http server", zap.Error(err))
