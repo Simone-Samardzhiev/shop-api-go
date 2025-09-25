@@ -41,6 +41,8 @@ func getEnvDuration(key string, fallback time.Duration) time.Duration {
 }
 
 type (
+	// Environment is an enum for different app environments.
+	Environment string
 	// Container contains all environment variables.
 	Container struct {
 		App      *AppConfig
@@ -49,7 +51,7 @@ type (
 	}
 	// AppConfig contains all environment variable for the application.
 	AppConfig struct {
-		Environment string
+		Environment Environment
 		Port        string
 	}
 
@@ -70,11 +72,21 @@ type (
 	}
 )
 
+const (
+	Production  Environment = "production"
+	Development Environment = "development"
+)
+
 // New creates a new Container instance.
 func New() (*Container, error) {
 	err := godotenv.Load()
 	if err != nil {
 		return nil, err
+	}
+
+	environment := Environment(getEnv("ENVIRONMENT", string(Development)))
+	if environment != Production && environment != Development {
+		return nil, fmt.Errorf("unknown environment: %s", environment)
 	}
 
 	maxOpenConnections := getEnvInt("DATABASE_MAX_OPEN_CONNECTIONS", 10)
@@ -106,7 +118,7 @@ func New() (*Container, error) {
 
 	return &Container{
 		App: &AppConfig{
-			Environment: getEnv("ENVIRONMENT", "development"),
+			Environment: environment,
 			Port:        getEnv("PORT", "8080"),
 		},
 		Database: &DBConfig{
