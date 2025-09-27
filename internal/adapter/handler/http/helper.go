@@ -30,7 +30,7 @@ var errMap = map[error]errorResponse{
 	},
 	domain.ErrUsernameAlreadyInUse: {
 		code:       "USER_ALREADY_IN_USE",
-		messages:   []string{"User is already in use."},
+		messages:   []string{"Username is already in use."},
 		statusCode: http.StatusConflict,
 	},
 	domain.ErrWrongCredentials: {
