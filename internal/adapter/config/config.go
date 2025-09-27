@@ -64,7 +64,7 @@ type (
 
 	// JWTConfig contains all environment variables for the JWTConfig tokens.
 	JWTConfig struct {
-		Secret                 string
+		Secret                 []byte
 		Issuer                 string
 		Audience               string
 		RefreshTokenExpireTime time.Duration
@@ -127,7 +127,7 @@ func New() (*Container, error) {
 			MaxIdleConnections: maxIdleConnections,
 		},
 		JWT: &JWTConfig{
-			Secret:                 secret,
+			Secret:                 []byte(secret),
 			Issuer:                 getEnv("JWT_ISSUER", "my-app"),
 			Audience:               getEnv("JWT_AUDIENCE", "my-app-users"),
 			RefreshTokenExpireTime: refreshTokenExpireTime,
