@@ -28,8 +28,8 @@ func NewTokenGenerator(config *config.JWTConfig) *TokenGenerator {
 }
 
 func (t *TokenGenerator) SignToken(token *domain.Token) (string, error) {
-	var exp time.Duration
 	now := time.Now()
+	var exp time.Duration
 
 	switch token.TokenType {
 	case domain.AccessToken:
@@ -37,13 +37,13 @@ func (t *TokenGenerator) SignToken(token *domain.Token) (string, error) {
 	case domain.RefreshToken:
 		exp = t.config.RefreshTokenExpireTime
 	default:
-		zap.L().Error(
-			"JWT signing failed",
-			zap.String("tokenType", string(token.TokenType)),
+		zap.L().Error("invalid token type",
+			zap.String("token_type", string(token.TokenType)),
 		)
 		return "", domain.ErrInternalServerError
 	}
 
+	token.ExpiresAt = now.Add(exp)
 	jwtClaims := claims{
 		UserRole:  token.UserRole,
 		TokenType: token.TokenType,
