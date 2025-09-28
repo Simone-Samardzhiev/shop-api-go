@@ -14,8 +14,8 @@ type TokenRepository struct {
 	db *sql.DB
 }
 
-// NewTaskRepository creates new TokenRepository instance.
-func NewTaskRepository(db *sql.DB) *TokenRepository {
+// NewTokenRepository creates new TokenRepository instance.
+func NewTokenRepository(db *sql.DB) *TokenRepository {
 	return &TokenRepository{db: db}
 }
 
