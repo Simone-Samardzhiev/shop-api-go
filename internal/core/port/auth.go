@@ -17,8 +17,8 @@ type TokenGenerator interface {
 type TokenRepository interface {
 	// AddToken insets a new token into the database.
 	AddToken(ctx context.Context, token *domain.Token) error
-	// DeleteExpiredToken deletes all tokens that have expired.
-	DeleteExpiredToken() error
+	// DeleteExpiredTokens deletes all tokens that have expired.
+	DeleteExpiredTokens() error
 }
 
 // AuthService is an interface for interacting with auth-related business logic.

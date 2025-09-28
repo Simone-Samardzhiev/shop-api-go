@@ -43,10 +43,10 @@ func (t *TokenRepository) AddToken(ctx context.Context, token *domain.Token) err
 	return nil
 }
 
-func (t *TokenRepository) DeleteExpiredToken() error {
+func (t *TokenRepository) DeleteExpiredTokens() error {
 	_, err := t.db.Exec("DELETE FROM tokens WHERE expires < NOW()")
 	if err != nil {
-		zap.L().Error("postgres/TokenRepository.DeleteExpiredToken failed", zap.Error(err))
+		zap.L().Error("postgres/TokenRepository.DeleteExpiredTokens failed", zap.Error(err))
 		return domain.ErrInternalServerError
 	}
 	return nil
