@@ -12,7 +12,11 @@ type Router struct {
 	*gin.Engine
 }
 
-func NewRouter(appConfig *config.AppConfig, userHandler *UserHandler) *Router {
+func NewRouter(
+	appConfig *config.AppConfig,
+	userHandler *UserHandler,
+	authHandler *AuthHandler,
+) *Router {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
 		_ = v.RegisterValidation("password", validatePassword)
 		_ = v.RegisterValidation("min_bytes", validateMinBytesLength)
@@ -34,7 +38,10 @@ func NewRouter(appConfig *config.AppConfig, userHandler *UserHandler) *Router {
 		{
 			user.POST("/register", userHandler.Register)
 		}
-
+		auth := v1.Group("/auth")
+		{
+			auth.POST("/login", authHandler.Login)
+		}
 	}
 	return &Router{r}
 }

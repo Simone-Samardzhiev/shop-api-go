@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"shop-api-go/internal/adapter/auth/jwt"
 	"shop-api-go/internal/adapter/config"
 	"shop-api-go/internal/adapter/handler/http"
 	"shop-api-go/internal/adapter/logger"
@@ -50,7 +51,12 @@ func main() {
 	userService := service.NewUserService(userRepository)
 	userHandler := http.NewUserHandler(userService)
 
-	router := http.NewRouter(container.App, userHandler)
+	tokenRepository := repository.NewTokenRepository(db)
+	jwtTokenGenerator := jwt.NewTokenGenerator(container.JWT)
+	authService := service.NewAuthService(jwtTokenGenerator, tokenRepository, userRepository)
+	authHandler := http.NewAuthHandler(authService)
+
+	router := http.NewRouter(container.App, userHandler, authHandler)
 	err = router.Start(container.App.Port)
 	if err != nil {
 		zap.L().Error("Error starting http server", zap.Error(err))
