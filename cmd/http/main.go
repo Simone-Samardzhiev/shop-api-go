@@ -9,6 +9,8 @@ import (
 	"shop-api-go/internal/adapter/storage/postgres"
 	"shop-api-go/internal/adapter/storage/postgres/repository"
 	"shop-api-go/internal/core/service"
+	"shop-api-go/internal/core/util"
+	"time"
 
 	_ "github.com/lib/pq"
 	"go.uber.org/zap"
@@ -52,6 +54,7 @@ func main() {
 	userHandler := http.NewUserHandler(userService)
 
 	tokenRepository := repository.NewTokenRepository(db)
+	util.StartDeleteExpiredTokensTask(tokenRepository, time.Hour*24)
 	jwtTokenGenerator := jwt.NewTokenGenerator(container.JWT)
 	authService := service.NewAuthService(jwtTokenGenerator, tokenRepository, userRepository)
 	authHandler := http.NewAuthHandler(authService)
