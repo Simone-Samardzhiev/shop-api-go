@@ -1,81 +1,111 @@
-package service
+package service_test
 
 import (
 	"context"
 	"shop-api-go/internal/core/domain"
 	"shop-api-go/internal/core/port/mock"
+	"shop-api-go/internal/core/service"
 	"shop-api-go/internal/core/util"
 	"testing"
-	"time"
 
-	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	tmock "github.com/stretchr/testify/mock"
+	"go.uber.org/mock/gomock"
 )
 
 func TestAuthService_Login(t *testing.T) {
-	mockTokenGenerator := new(mock.TokenGenerator)
-	mockTokenRepository := new(mock.TokenRepository)
-	mockUserRepository := new(mock.UserRepository)
+	ctrl := gomock.NewController(t)
 
-	id := uuid.New()
+	mockTokenGenerator := mock.NewMockTokenGenerator(ctrl)
+	mockTokenRepository := mock.NewMockTokenRepository(ctrl)
+	mockUserRepository := mock.NewMockUserRepository(ctrl)
+
 	hash, err := util.HashPassword("password")
-	if err != nil {
-		t.Fatalf("Error hashing password: %v", err)
-	}
+	assert.NoError(t, err)
 
-	mockTokenGenerator.On("SignToken", tmock.Anything).Return("token", nil)
+	gomock.InOrder(
+		// Test 1 (success)
+		mockUserRepository.EXPECT().GetUserByUsername(gomock.Any(), gomock.Any()).
+			Return(&domain.User{Username: "existingUser", Password: string(hash)}, nil),
+		mockTokenGenerator.EXPECT().
+			SignToken(gomock.Any()).
+			Return("token", nil).
+			Times(2),
+		mockTokenRepository.EXPECT().
+			AddToken(gomock.Any(), gomock.Any()).
+			Return(nil),
 
-	mockTokenRepository.On("AddToken", tmock.Anything, tmock.Anything).Return(nil)
+		// Test 2 (error fetching user)
+		mockUserRepository.EXPECT().GetUserByUsername(gomock.Any(), gomock.Any()).
+			Return((*domain.User)(nil), domain.ErrInternalServerError),
 
-	mockUserRepository.On("GetUserByUsername", tmock.Anything, tmock.MatchedBy(func(username string) bool {
-		return username == "NewUser"
-	})).Return((*domain.User)(nil), domain.ErrWrongCredentials)
-	mockUserRepository.On("GetUserByUsername", tmock.Anything, tmock.MatchedBy(func(username string) bool {
-		return username == "ExistingUser"
-	})).Return(&domain.User{
-		Id:        id,
-		Username:  "ExistingUser",
-		Email:     "ExistingUser",
-		Password:  string(hash),
-		Role:      domain.Client,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}, nil)
+		// Test 3 (username is not found)
+		mockUserRepository.EXPECT().GetUserByUsername(gomock.Any(), gomock.Any()).
+			Return((*domain.User)(nil), domain.ErrWrongCredentials),
 
-	service := NewAuthService(mockTokenGenerator, mockTokenRepository, mockUserRepository)
+		// Test 4 (error signing token)
+		mockUserRepository.EXPECT().GetUserByUsername(gomock.Any(), gomock.Any()).
+			Return(&domain.User{Username: "existingUser", Password: string(hash)}, nil),
+		mockTokenGenerator.EXPECT().
+			SignToken(gomock.Any()).
+			Return("", domain.ErrInternalServerError),
+
+		// Test 5 (error adding token)
+		mockUserRepository.EXPECT().
+			GetUserByUsername(gomock.Any(), gomock.Any()).
+			Return(&domain.User{Username: "existingUser", Password: string(hash)}, nil),
+		mockTokenGenerator.EXPECT().
+			SignToken(gomock.Any()).
+			Return("token", nil).
+			Times(2),
+		mockTokenRepository.EXPECT().
+			AddToken(gomock.Any(), gomock.Any()).
+			Return(domain.ErrInternalServerError),
+	)
+
+	s := service.NewAuthService(mockTokenGenerator, mockTokenRepository, mockUserRepository)
+
 	tests := []struct {
 		name               string
 		user               *domain.User
-		expectedTokenGroup *domain.TokenGroup
 		expectedErr        error
+		expectedTokenGroup *domain.TokenGroup
 	}{
 		{
-			name:               "Success",
-			user:               &domain.User{Username: "ExistingUser", Password: "password"},
-			expectedTokenGroup: &domain.TokenGroup{AccessToken: "token", RefreshToken: "token"},
+			name:               "success",
+			user:               &domain.User{Username: "existingUsername", Password: "password"},
 			expectedErr:        nil,
+			expectedTokenGroup: &domain.TokenGroup{AccessToken: "token", RefreshToken: "token"},
+		}, {
+			name:               "error fetching user",
+			user:               &domain.User{},
+			expectedErr:        domain.ErrInternalServerError,
+			expectedTokenGroup: nil,
 		},
 		{
-			name:               "Error invalid username",
-			user:               &domain.User{Username: "NewUser", Password: "password"},
-			expectedTokenGroup: nil,
+			name:               "username is not found",
+			user:               &domain.User{},
 			expectedErr:        domain.ErrWrongCredentials,
+			expectedTokenGroup: nil,
 		}, {
-			name:               "Error invalid password",
-			user:               &domain.User{Username: "ExistingUser", Password: "pass"},
+			name:               "error signing token",
+			user:               &domain.User{Username: "existingUser", Password: "password"},
+			expectedErr:        domain.ErrInternalServerError,
 			expectedTokenGroup: nil,
-			expectedErr:        domain.ErrWrongCredentials,
+		}, {
+			name:               "error adding token",
+			user:               &domain.User{Username: "existingUser", Password: "password"},
+			expectedErr:        domain.ErrInternalServerError,
+			expectedTokenGroup: nil,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			res, serviceErr := service.Login(context.Background(), tt.user)
+			tokenGroup, serviceErr := s.Login(context.Background(), tt.user)
 			if tt.expectedErr == nil {
-				assert.Equal(t, res, tt.expectedTokenGroup)
+				assert.Equal(t, tt.expectedTokenGroup, tokenGroup)
 			} else {
-				assert.ErrorIs(t, serviceErr, tt.expectedErr)
+				assert.ErrorIs(t, tt.expectedErr, serviceErr)
 			}
 		})
 	}

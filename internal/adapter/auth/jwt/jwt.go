@@ -58,7 +58,12 @@ func (t *TokenGenerator) SignToken(token *domain.Token) (string, error) {
 		},
 	}
 
-	return jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims).SignedString(t.config.Secret)
+	signedToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims).SignedString(t.config.Secret)
+	if err != nil {
+		zap.L().Error("failed to sign token", zap.Error(err))
+		return "", domain.ErrInternalServerError
+	}
+	return signedToken, nil
 }
 
 func (t *TokenGenerator) ParseToken(token string) (*domain.Token, error) {

@@ -2,13 +2,11 @@ package service
 
 import (
 	"context"
-	"errors"
 	"shop-api-go/internal/core/domain"
 	"shop-api-go/internal/core/port"
 	"shop-api-go/internal/core/util"
 
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 type AuthService struct {
@@ -27,13 +25,8 @@ func NewAuthService(tokenGenerator port.TokenGenerator, tokenRepository port.Tok
 
 func (as *AuthService) Login(ctx context.Context, user *domain.User) (*domain.TokenGroup, error) {
 	fetchedUser, err := as.userRepository.GetUserByUsername(ctx, user.Username)
-	if errors.Is(err, domain.ErrWrongCredentials) {
-		return nil, domain.ErrWrongCredentials
-	} else if err != nil {
-		zap.L().Error("AuthService.Login failed",
-			zap.String("username", user.Username),
-			zap.Error(err))
-		return nil, domain.ErrInternalServerError
+	if err != nil {
+		return nil, err
 	}
 
 	if !util.ComparePassword(user.Password, fetchedUser.Password) {
@@ -49,12 +42,7 @@ func (as *AuthService) Login(ctx context.Context, user *domain.User) (*domain.To
 
 	signedAccessToken, err := as.tokenGenerator.SignToken(&accessToken)
 	if err != nil {
-		zap.L().Error("AuthService.Login failed",
-			zap.String("username", user.Username),
-			zap.Error(err),
-		)
-
-		return nil, domain.ErrInternalServerError
+		return nil, err
 	}
 
 	refreshToken := domain.Token{
@@ -65,18 +53,11 @@ func (as *AuthService) Login(ctx context.Context, user *domain.User) (*domain.To
 	}
 	signedRefreshToken, err := as.tokenGenerator.SignToken(&refreshToken)
 	if err != nil {
-		zap.L().Error("AuthService.Login failed",
-			zap.String("username", user.Username),
-			zap.Error(err),
-		)
+		return nil, err
 	}
 	err = as.tokenRepository.AddToken(ctx, &refreshToken)
 	if err != nil {
-		zap.L().Error("AuthService.Login failed",
-			zap.String("username", user.Username),
-			zap.Error(err),
-		)
-		return nil, domain.ErrInternalServerError
+		return nil, err
 	}
 
 	return &domain.TokenGroup{

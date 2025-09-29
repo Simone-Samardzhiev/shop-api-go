@@ -1,79 +1,76 @@
-package service
+package service_test
 
 import (
 	"context"
+	"errors"
 	"shop-api-go/internal/core/domain"
 	"shop-api-go/internal/core/port/mock"
+	"shop-api-go/internal/core/service"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
-	tmock "github.com/stretchr/testify/mock"
-
-	"github.com/google/uuid"
+	"go.uber.org/mock/gomock"
 )
 
 func TestUserService_Register(t *testing.T) {
-	mockRepo := new(mock.UserRepository)
-	ctx := context.Background()
-	id := uuid.New()
-	// Success case
-	mockRepo.On("AddUser", ctx, tmock.MatchedBy(func(u *domain.User) bool {
-		return u.Email == "email" && u.Username == "username"
-	})).Return(nil)
+	ctrl := gomock.NewController(t)
 
-	// Duplicate email case
-	mockRepo.On("AddUser", ctx, tmock.MatchedBy(func(u *domain.User) bool {
-		return u.Email == "duplicate"
-	})).Return(domain.ErrEmailAlreadyInUse)
+	mockUserRepository := mock.NewMockUserRepository(ctrl)
+	gomock.InOrder(
+		mockUserRepository.EXPECT().
+			AddUser(gomock.Any(), gomock.AssignableToTypeOf(&domain.User{})).
+			DoAndReturn(func(ctx context.Context, user *domain.User) error {
+				return nil
+			}),
+		mockUserRepository.EXPECT().
+			AddUser(gomock.Any(), gomock.AssignableToTypeOf(&domain.User{})).
+			DoAndReturn(func(ctx context.Context, user *domain.User) error {
+				if user.Username != "duplicate" {
+					return errors.New("username is not duplicate")
+				}
+				return domain.ErrUsernameAlreadyInUse
+			}),
+		mockUserRepository.EXPECT().
+			AddUser(gomock.Any(), gomock.AssignableToTypeOf(&domain.User{})).
+			DoAndReturn(func(ctx context.Context, user *domain.User) error {
+				if user.Email != "duplicate" {
+					return errors.New("email is not duplicate")
+				}
+				return domain.ErrEmailAlreadyInUse
+			}),
+	)
 
-	// Duplicate username case
-	mockRepo.On("AddUser", ctx, tmock.MatchedBy(func(u *domain.User) bool {
-		return u.Username == "duplicate"
-	})).Return(domain.ErrUsernameAlreadyInUse)
-
-	service := NewUserService(mockRepo)
+	s := service.NewUserService(mockUserRepository)
 
 	tests := []struct {
-		name          string
-		user          *domain.User
-		expectedError error
+		name        string
+		user        *domain.User
+		expectedErr error
 	}{
 		{
-			name: "Success",
+			name:        "success",
+			user:        &domain.User{},
+			expectedErr: nil,
+		},
+		{
+			name: "duplicate username",
 			user: &domain.User{
-				Id:       id,
-				Email:    "email",
-				Username: "username",
-				Password: "password",
-				Role:     domain.Client,
-			},
-			expectedError: nil,
-		}, {
-			name: "Error with duplicate email",
-			user: &domain.User{
-				Id:       id,
-				Email:    "duplicate",
-				Username: "username",
-				Password: "password",
-				Role:     domain.Client,
-			},
-			expectedError: domain.ErrEmailAlreadyInUse,
-		}, {
-			name: "Error with duplicate username",
-			user: &domain.User{
-				Id:       id,
-				Email:    "email",
 				Username: "duplicate",
-				Password: "password",
-				Role:     domain.Client,
 			},
-			expectedError: domain.ErrUsernameAlreadyInUse,
+			expectedErr: domain.ErrUsernameAlreadyInUse,
+		}, {
+			name: "duplicate email",
+			user: &domain.User{
+				Email: "duplicate",
+			},
+			expectedErr: domain.ErrEmailAlreadyInUse,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			assert.ErrorIs(t, service.Register(ctx, tt.user), tt.expectedError)
+			err := s.Register(context.Background(), tt.user)
+			assert.Equal(t, tt.expectedErr, err)
 		})
 	}
 }
