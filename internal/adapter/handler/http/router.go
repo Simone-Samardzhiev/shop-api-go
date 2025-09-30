@@ -10,6 +10,7 @@ import (
 
 type Router struct {
 	*gin.Engine
+	appConfig *config.AppConfig
 }
 
 func NewRouter(
@@ -43,9 +44,9 @@ func NewRouter(
 			auth.POST("/login", authHandler.Login)
 		}
 	}
-	return &Router{r}
+	return &Router{r, appConfig}
 }
 
-func (r *Router) Start(addr string) error {
-	return r.Run(addr)
+func (r *Router) Start() error {
+	return r.Run(r.appConfig.Port)
 }

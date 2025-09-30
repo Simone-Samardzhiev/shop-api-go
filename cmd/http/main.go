@@ -60,7 +60,7 @@ func main() {
 	authHandler := http.NewAuthHandler(authService)
 
 	router := http.NewRouter(container.App, userHandler, authHandler)
-	err = router.Start(container.App.Port)
+	err = router.Start()
 	if err != nil {
 		zap.L().Error("Error starting http server", zap.Error(err))
 	}
