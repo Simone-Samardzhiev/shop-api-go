@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"log"
 	"shop-api-go/internal/adapter/auth/jwt"
 	"shop-api-go/internal/adapter/config"
@@ -54,10 +55,13 @@ func main() {
 	userHandler := http.NewUserHandler(userService)
 
 	tokenRepository := repository.NewTokenRepository(db)
-	util.StartDeleteExpiredTokensTask(tokenRepository, time.Hour*24)
 	jwtTokenGenerator := jwt.NewTokenGenerator(container.JWT)
 	authService := service.NewAuthService(jwtTokenGenerator, tokenRepository, userRepository)
 	authHandler := http.NewAuthHandler(authService)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	util.StartDeleteExpiredTokensTask(ctx, tokenRepository, time.Hour)
 
 	router := http.NewRouter(container.App, userHandler, authHandler)
 	err = router.Start()
