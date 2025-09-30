@@ -10,12 +10,12 @@ import (
 
 // jwtMiddleware is a middleware used to authenticate user by JWT.
 //
-// Note: The middleware support role specification and token type specification.
-func jwtMiddleware(generator port.TokenGenerator, role domain.UserRole, tokenType domain.TokenType, key string) gin.HandlerFunc {
+// Note: Key value sets the key where the token will be stored in the context.
+func jwtMiddleware(generator port.TokenGenerator, key string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		header := c.GetHeader("Authorization")
 		if header == "" || !strings.HasPrefix(header, "Bearer ") {
-			_ = c.Error(domain.ErrMalformedToken)
+			handleError(c, domain.ErrMalformedToken)
 			c.Abort()
 			return
 		}
@@ -23,19 +23,7 @@ func jwtMiddleware(generator port.TokenGenerator, role domain.UserRole, tokenTyp
 		tokenString := strings.TrimPrefix(header, "Bearer ")
 		token, err := generator.ParseToken(tokenString)
 		if err != nil {
-			_ = c.Error(err)
-			c.Abort()
-			return
-		}
-
-		if token.UserRole != role {
-			_ = c.Error(domain.ErrMalformedToken)
-			c.Abort()
-			return
-		}
-
-		if token.TokenType != tokenType {
-			_ = c.Error(domain.ErrInvalidToken)
+			handleError(c, domain.ErrInvalidToken)
 			c.Abort()
 			return
 		}
