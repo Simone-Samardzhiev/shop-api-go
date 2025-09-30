@@ -14,6 +14,7 @@ import (
 	reflect "reflect"
 	domain "shop-api-go/internal/core/domain"
 
+	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -123,6 +124,21 @@ func (mr *MockTokenRepositoryMockRecorder) DeleteExpiredTokens() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteExpiredTokens", reflect.TypeOf((*MockTokenRepository)(nil).DeleteExpiredTokens))
 }
 
+// DeleteToken mocks base method.
+func (m *MockTokenRepository) DeleteToken(ctx context.Context, id uuid.UUID) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteToken", ctx, id)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DeleteToken indicates an expected call of DeleteToken.
+func (mr *MockTokenRepositoryMockRecorder) DeleteToken(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteToken", reflect.TypeOf((*MockTokenRepository)(nil).DeleteToken), ctx, id)
+}
+
 // MockAuthService is a mock of AuthService interface.
 type MockAuthService struct {
 	ctrl     *gomock.Controller
@@ -160,4 +176,19 @@ func (m *MockAuthService) Login(ctx context.Context, user *domain.User) (*domain
 func (mr *MockAuthServiceMockRecorder) Login(ctx, user any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Login", reflect.TypeOf((*MockAuthService)(nil).Login), ctx, user)
+}
+
+// RefreshSession mocks base method.
+func (m *MockAuthService) RefreshSession(ctx context.Context, token *domain.Token) (*domain.TokenGroup, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RefreshSession", ctx, token)
+	ret0, _ := ret[0].(*domain.TokenGroup)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RefreshSession indicates an expected call of RefreshSession.
+func (mr *MockAuthServiceMockRecorder) RefreshSession(ctx, token any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RefreshSession", reflect.TypeOf((*MockAuthService)(nil).RefreshSession), ctx, token)
 }

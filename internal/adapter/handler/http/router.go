@@ -2,6 +2,7 @@ package http
 
 import (
 	"shop-api-go/internal/adapter/config"
+	"shop-api-go/internal/core/port"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
@@ -15,6 +16,7 @@ type Router struct {
 
 func NewRouter(
 	appConfig *config.AppConfig,
+	tokenGenerator port.TokenGenerator,
 	userHandler *UserHandler,
 	authHandler *AuthHandler,
 ) *Router {
@@ -42,6 +44,7 @@ func NewRouter(
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/login", authHandler.Login)
+			auth.GET("/refresh-session", jwtMiddleware(tokenGenerator, "token"), authHandler.RefreshSession)
 		}
 	}
 	return &Router{r, appConfig}

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"shop-api-go/internal/core/domain"
 
+	"github.com/google/uuid"
 	"go.uber.org/zap"
 )
 
@@ -41,6 +42,24 @@ func (t *TokenRepository) AddToken(ctx context.Context, token *domain.Token) err
 		return domain.ErrInternalServerError
 	}
 	return nil
+}
+
+func (t *TokenRepository) DeleteToken(ctx context.Context, id uuid.UUID) (bool, error) {
+	result, err := t.db.ExecContext(ctx, "DELETE FROM tokens WHERE id = $1", id)
+	if err != nil {
+		zap.L().Error("postgres/TokenRepository.DeleteToken failed",
+			zap.String("id", id.String()),
+			zap.Error(err),
+		)
+		return false, domain.ErrInternalServerError
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		zap.L().Error("postgres/TokenRepository.DeleteToken failed", zap.Error(err))
+		return false, domain.ErrInternalServerError
+	}
+	return rowsAffected > 0, nil
 }
 
 func (t *TokenRepository) DeleteExpiredTokens() error {

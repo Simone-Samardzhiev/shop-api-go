@@ -65,3 +65,48 @@ func (as *AuthService) Login(ctx context.Context, user *domain.User) (*domain.To
 		RefreshToken: signedRefreshToken,
 	}, nil
 }
+
+func (as *AuthService) RefreshSession(ctx context.Context, token *domain.Token) (*domain.TokenGroup, error) {
+	if token.TokenType != domain.RefreshToken {
+		return nil, domain.ErrInvalidTokenType
+	}
+
+	result, err := as.tokenRepository.DeleteToken(ctx, token.Id)
+	if err != nil {
+		return nil, err
+	}
+	if !result {
+		return nil, domain.ErrInvalidToken
+	}
+
+	accessToken := domain.Token{
+		Id:        uuid.New(),
+		UserId:    token.UserId,
+		TokenType: domain.AccessToken,
+		UserRole:  token.UserRole,
+	}
+	signedAccessToken, err := as.tokenGenerator.SignToken(&accessToken)
+	if err != nil {
+		return nil, err
+	}
+
+	token = &domain.Token{
+		Id:        uuid.New(),
+		UserId:    token.UserId,
+		TokenType: domain.RefreshToken,
+		UserRole:  token.UserRole,
+	}
+	signedRefreshToken, err := as.tokenGenerator.SignToken(token)
+	if err != nil {
+		return nil, err
+	}
+
+	err = as.tokenRepository.AddToken(ctx, token)
+	if err != nil {
+		return nil, err
+	}
+	return &domain.TokenGroup{
+		AccessToken:  signedAccessToken,
+		RefreshToken: signedRefreshToken,
+	}, nil
+}

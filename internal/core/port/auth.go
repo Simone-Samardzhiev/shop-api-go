@@ -3,6 +3,8 @@ package port
 import (
 	"context"
 	"shop-api-go/internal/core/domain"
+
+	"github.com/google/uuid"
 )
 
 // TokenGenerator is an interface for signing and decoding tokens.
@@ -17,6 +19,8 @@ type TokenGenerator interface {
 type TokenRepository interface {
 	// AddToken insets a new token into the database.
 	AddToken(ctx context.Context, token *domain.Token) error
+	// DeleteToken deletes a token with specified id and returns true if the token was deleted.
+	DeleteToken(ctx context.Context, id uuid.UUID) (bool, error)
 	// DeleteExpiredTokens deletes all tokens that have expired.
 	DeleteExpiredTokens() error
 }
@@ -25,4 +29,6 @@ type TokenRepository interface {
 type AuthService interface {
 	// Login validates user credentials and returns domain.TokenGroup.
 	Login(ctx context.Context, user *domain.User) (*domain.TokenGroup, error)
+	// RefreshSession uses a refresh token to refresh user session.
+	RefreshSession(ctx context.Context, token *domain.Token) (*domain.TokenGroup, error)
 }

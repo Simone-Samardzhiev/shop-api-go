@@ -42,3 +42,26 @@ func (h *AuthHandler) Login(c *gin.Context) {
 		"refreshToken": tokenGroup.RefreshToken,
 	})
 }
+
+func (h *AuthHandler) RefreshSession(c *gin.Context) {
+	token, ok := c.Get("token")
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+	domainToken, ok := token.(*domain.Token)
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+
+	tokenGroup, err := h.authService.RefreshSession(c, domainToken)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"accessToken":  tokenGroup.AccessToken,
+		"refreshToken": tokenGroup.RefreshToken,
+	})
+}
