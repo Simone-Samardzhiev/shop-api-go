@@ -33,3 +33,18 @@ func (s *UserService) Register(ctx context.Context, user *domain.User) error {
 	user.Password = string(hash)
 	return s.ur.AddUser(ctx, user)
 }
+
+func (s *UserService) GetUsersByOffestPagination(ctx context.Context, token *domain.Token, page, limit int) ([]domain.User, error) {
+	if token.TokenType != domain.AccessToken {
+		return nil, domain.ErrInvalidTokenType
+	}
+	if token.UserRole != domain.Admin {
+		return nil, domain.ErrInvalidTokenRole
+	}
+
+	users, err := s.ur.GetUsersByOffestPagination(ctx, page, limit)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}

@@ -17,6 +17,8 @@ var (
 	ErrInvalidToken = errors.New("invalid token")
 	// ErrInvalidTokenType is an error for when user use invalid token type.
 	ErrInvalidTokenType = errors.New("invalid token type")
+	// ErrInvalidTokenRole is an error for when user tries to access a resource, to which he doesn't have a precision to access.
+	ErrInvalidTokenRole = errors.New("invalid token role")
 	// ErrMalformedToken is an error for when token data is invalid.
 	ErrMalformedToken = errors.New("invalid token subject")
 )

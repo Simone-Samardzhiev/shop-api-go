@@ -11,6 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
+// errorResponse represent a meaningful response when an error occurs.
 type errorResponse struct {
 	code       string
 	messages   []string
@@ -47,6 +48,10 @@ var errMap = map[error]errorResponse{
 		code:       "INVALID_TOKEN_TYPE",
 		messages:   []string{"Token type is invalid."},
 		statusCode: http.StatusUnauthorized,
+	}, domain.ErrInvalidTokenRole: {
+		code:       "INVALID_TOKEN_ROLE",
+		messages:   []string{"Token role is invalid."},
+		statusCode: http.StatusUnauthorized,
 	},
 	domain.ErrMalformedToken: {
 		code:       "MALFORMED_TOKEN",
@@ -55,6 +60,7 @@ var errMap = map[error]errorResponse{
 	},
 }
 
+// handleError parses the error and return a proper message to the client.
 func handleError(c *gin.Context, err error) {
 	res, ok := errMap[err]
 	if !ok {
@@ -79,6 +85,7 @@ func handleError(c *gin.Context, err error) {
 	})
 }
 
+// handleBindingError parses the error and returns a proper message to the client.
 func handleBindingError(c *gin.Context, err error) {
 	var validationsErrors validator.ValidationErrors
 	messages := make([]string, 0, len(validationsErrors))
@@ -96,6 +103,10 @@ func handleBindingError(c *gin.Context, err error) {
 				messages = append(messages, fmt.Sprintf("%s length must be more than %s", e.Field(), e.Param()))
 			case "max_bytes":
 				messages = append(messages, fmt.Sprintf("%s length must be less than %s", e.Field(), e.Param()))
+			case "min":
+				messages = append(messages, fmt.Sprintf("%s must be more than %s", e.Field(), e.Param()))
+			case "max":
+				messages = append(messages, fmt.Sprintf("%s must be less than %s", e.Field(), e.Param()))
 			default:
 				messages = append(messages, fmt.Sprintf("%s is not a valid type", e.Field()))
 			}

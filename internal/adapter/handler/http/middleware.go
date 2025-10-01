@@ -8,10 +8,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// jwtMiddleware is a middleware used to authenticate user by JWT.
+// newJwtMiddleware is a middleware used to authenticate user by JWT.
 //
 // Note: Key value sets the key where the token will be stored in the context.
-func jwtMiddleware(generator port.TokenGenerator, key string) gin.HandlerFunc {
+func newJwtMiddleware(generator port.TokenGenerator, key string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		header := c.GetHeader("Authorization")
 		if header == "" || !strings.HasPrefix(header, "Bearer ") {

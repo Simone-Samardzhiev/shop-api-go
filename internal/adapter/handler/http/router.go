@@ -35,16 +35,19 @@ func NewRouter(
 
 	r := gin.New()
 	r.Use(gin.Recovery())
+	jwtMiddleware := newJwtMiddleware(tokenGenerator, "token")
+
 	v1 := r.Group("/api/v1")
 	{
 		user := v1.Group("/users")
 		{
 			user.POST("/register", userHandler.Register)
+			user.GET("/users-pagination-by-offset", jwtMiddleware, userHandler.GetUsersByPages)
 		}
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/login", authHandler.Login)
-			auth.GET("/refresh-session", jwtMiddleware(tokenGenerator, "token"), authHandler.RefreshSession)
+			auth.GET("/refresh-session", jwtMiddleware, authHandler.RefreshSession)
 		}
 	}
 	return &Router{r, appConfig}

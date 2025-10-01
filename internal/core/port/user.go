@@ -11,9 +11,14 @@ type UserRepository interface {
 	AddUser(ctx context.Context, user *domain.User) error
 	// GetUserByUsername fetches a user by specific username.
 	GetUserByUsername(ctx context.Context, username string) (*domain.User, error)
+	// GetUsersByOffestPagination fetches users using offset pagination.
+	GetUsersByOffestPagination(ctx context.Context, page, limit int) ([]domain.User, error)
 }
 
 // UserService is an interface for interacting with user-related business logic.
 type UserService interface {
+	// Register adds a new user.
 	Register(ctx context.Context, user *domain.User) error
+	// GetUsersByOffestPagination fetches users using offset pagination.
+	GetUsersByOffestPagination(ctx context.Context, token *domain.Token, page, limit int) ([]domain.User, error)
 }

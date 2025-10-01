@@ -86,3 +86,43 @@ func (r *UserRepository) GetUserByUsername(ctx context.Context, username string)
 	}
 	return &user, nil
 }
+
+func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, limit int) ([]domain.User, error) {
+	var users []domain.User
+	rows, err := r.db.QueryContext(
+		ctx,
+		`SELECT id, username, email, role, created_at, updated_at 
+		FROM users
+		OFFSET $1 LIMIT $2`,
+		(page-1)*limit,
+		limit,
+	)
+	if err != nil {
+		zap.L().Error("postgres/UserRepository.GetUsersByOffestPagination failed",
+			zap.Int("page", page),
+			zap.Int("limit", limit),
+			zap.Error(err),
+		)
+		return users, domain.ErrInternalServerError
+	}
+
+	defer func() {
+		closeErr := rows.Close()
+		if closeErr != nil {
+			zap.L().Error("postgres/UserRepository.GetUsersByOffestPagination failed", zap.Error(closeErr))
+		}
+	}()
+
+	for rows.Next() {
+		var user domain.User
+		scanErr := rows.Scan(&user.Id, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+		if scanErr != nil {
+			zap.L().Error("postgres/UserRepository.GetUsersByOffestPagination failed", zap.Error(scanErr))
+			return users, domain.ErrInternalServerError
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
+}

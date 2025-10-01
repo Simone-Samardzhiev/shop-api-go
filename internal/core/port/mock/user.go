@@ -70,6 +70,21 @@ func (mr *MockUserRepositoryMockRecorder) GetUserByUsername(ctx, username any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserByUsername", reflect.TypeOf((*MockUserRepository)(nil).GetUserByUsername), ctx, username)
 }
 
+// GetUsersByOffestPagination mocks base method.
+func (m *MockUserRepository) GetUsersByOffestPagination(ctx context.Context, page, limit int) ([]domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsersByOffestPagination", ctx, page, limit)
+	ret0, _ := ret[0].([]domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsersByOffestPagination indicates an expected call of GetUsersByOffestPagination.
+func (mr *MockUserRepositoryMockRecorder) GetUsersByOffestPagination(ctx, page, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByOffestPagination", reflect.TypeOf((*MockUserRepository)(nil).GetUsersByOffestPagination), ctx, page, limit)
+}
+
 // MockUserService is a mock of UserService interface.
 type MockUserService struct {
 	ctrl     *gomock.Controller
@@ -92,6 +107,21 @@ func NewMockUserService(ctrl *gomock.Controller) *MockUserService {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockUserService) EXPECT() *MockUserServiceMockRecorder {
 	return m.recorder
+}
+
+// GetUsersByOffestPagination mocks base method.
+func (m *MockUserService) GetUsersByOffestPagination(ctx context.Context, token *domain.Token, page, limit int) ([]domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsersByOffestPagination", ctx, token, page, limit)
+	ret0, _ := ret[0].([]domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsersByOffestPagination indicates an expected call of GetUsersByOffestPagination.
+func (mr *MockUserServiceMockRecorder) GetUsersByOffestPagination(ctx, token, page, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByOffestPagination", reflect.TypeOf((*MockUserService)(nil).GetUsersByOffestPagination), ctx, token, page, limit)
 }
 
 // Register mocks base method.
