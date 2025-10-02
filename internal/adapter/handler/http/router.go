@@ -35,6 +35,7 @@ func NewRouter(
 
 	r := gin.New()
 	r.Use(gin.Recovery())
+	r.Use(zapLogger())
 	jwtMiddleware := newJwtMiddleware(tokenGenerator, "token")
 
 	v1 := r.Group("/api/v1")
