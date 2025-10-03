@@ -2,6 +2,6 @@
 <project version="4">
   <component name="DataSourcePerFileMappings">
     <file url="file://$PROJECT_DIR$/internal/adapter/storage/postgres/migrations/000003_create_pg_trgm_exention_for_users.up.sql" value="123f4f3f-8f3c-40ee-a242-d2dddf7c735b" />
-    <file url="file://$PROJECT_DIR$/internal/adapter/storage/postgres/repository/user.go" value="123f4f3f-8f3c-40ee-a242-d2dddf7c735b" />
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/123f4f3f-8f3c-40ee-a242-d2dddf7c735b/console.sql" value="123f4f3f-8f3c-40ee-a242-d2dddf7c735b" />
   </component>
 </project>

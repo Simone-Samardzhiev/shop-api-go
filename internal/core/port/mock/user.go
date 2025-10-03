@@ -101,6 +101,21 @@ func (mr *MockUserRepositoryMockRecorder) GetUsersByTimePagination(ctx, after, l
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByTimePagination", reflect.TypeOf((*MockUserRepository)(nil).GetUsersByTimePagination), ctx, after, limit)
 }
 
+// SearchUserByUsername mocks base method.
+func (m *MockUserRepository) SearchUserByUsername(ctx context.Context, username string, limit int) ([]domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchUserByUsername", ctx, username, limit)
+	ret0, _ := ret[0].([]domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchUserByUsername indicates an expected call of SearchUserByUsername.
+func (mr *MockUserRepositoryMockRecorder) SearchUserByUsername(ctx, username, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUserByUsername", reflect.TypeOf((*MockUserRepository)(nil).SearchUserByUsername), ctx, username, limit)
+}
+
 // MockUserService is a mock of UserService interface.
 type MockUserService struct {
 	ctrl     *gomock.Controller
@@ -167,4 +182,19 @@ func (m *MockUserService) Register(ctx context.Context, user *domain.User) error
 func (mr *MockUserServiceMockRecorder) Register(ctx, user any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockUserService)(nil).Register), ctx, user)
+}
+
+// SearchUserByUsername mocks base method.
+func (m *MockUserService) SearchUserByUsername(ctx context.Context, token *domain.Token, username string, limit int) ([]domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SearchUserByUsername", ctx, token, username, limit)
+	ret0, _ := ret[0].([]domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SearchUserByUsername indicates an expected call of SearchUserByUsername.
+func (mr *MockUserServiceMockRecorder) SearchUserByUsername(ctx, token, username, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUserByUsername", reflect.TypeOf((*MockUserService)(nil).SearchUserByUsername), ctx, token, username, limit)
 }

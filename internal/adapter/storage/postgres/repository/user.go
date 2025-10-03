@@ -163,3 +163,40 @@ func (r *UserRepository) GetUsersByTimePagination(ctx context.Context, after tim
 
 	return users, nil
 }
+
+func (r *UserRepository) SearchUserByUsername(ctx context.Context, username string, limit int) ([]domain.User, error) {
+	rows, err := r.db.QueryContext(
+		ctx,
+		`SELECT id, username, email, role, created_at, updated_at FROM users
+		WHERE username % $1
+		ORDER BY similarity(username, $1) DESC
+		LIMIT $2`,
+		username,
+		limit,
+	)
+
+	if err != nil {
+		zap.L().Error("postgres/UserRepository.SearchUserByUsername failed", zap.Error(err))
+		return nil, domain.ErrInternalServerError
+	}
+
+	defer func() {
+		closeErr := rows.Close()
+		if closeErr != nil {
+			zap.L().Error("postgres/UserRepository.SearchUserByUsername failed", zap.Error(closeErr))
+		}
+	}()
+
+	users := make([]domain.User, 0, limit)
+	for rows.Next() {
+		var user domain.User
+		err = rows.Scan(&user.Id, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+		if err != nil {
+			zap.L().Error("postgres/UserRepository.SearchUserByUsername failed", zap.Error(err))
+			return nil, domain.ErrInternalServerError
+		}
+		users = append(users, user)
+	}
+
+	return users, nil
+}

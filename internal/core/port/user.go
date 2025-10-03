@@ -16,6 +16,8 @@ type UserRepository interface {
 	GetUsersByOffestPagination(ctx context.Context, page, limit int) ([]domain.User, error)
 	// GetUsersByTimePagination fetches users using time pagination.
 	GetUsersByTimePagination(ctx context.Context, after time.Time, limit int) ([]domain.User, error)
+	// SearchUserByUsername searches for users with similar to the provided username.
+	SearchUserByUsername(ctx context.Context, username string, limit int) ([]domain.User, error)
 }
 
 // UserService is an interface for interacting with user-related business logic.
@@ -26,4 +28,6 @@ type UserService interface {
 	GetUsersByOffestPagination(ctx context.Context, token *domain.Token, page, limit int) ([]domain.User, error)
 	// GetUsersByTimePagination fetches users using time pagination.
 	GetUsersByTimePagination(ctx context.Context, token *domain.Token, after time.Time, limit int) ([]domain.User, error)
+	// SearchUserByUsername searches for users with similar to the provided username.
+	SearchUserByUsername(ctx context.Context, token *domain.Token, username string, limit int) ([]domain.User, error)
 }

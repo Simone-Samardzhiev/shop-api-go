@@ -87,7 +87,9 @@ func TestUserService_GetUsersByPages(t *testing.T) {
 				gomock.AssignableToTypeOf(0),
 			).
 			Return([]domain.User{
-				{Username: "fetchedUser"},
+				{
+					Username: "fetchedUser",
+				},
 			}, nil),
 		mockUserRepository.EXPECT().
 			GetUsersByOffestPagination(
@@ -151,7 +153,9 @@ func TestUserService_GetUsersByTimePagination(t *testing.T) {
 				gomock.AssignableToTypeOf(0),
 			).
 			Return([]domain.User{
-				{Username: "fetchedUser"},
+				{
+					Username: "fetchedUser",
+				},
 			}, nil),
 		mockUserRepository.EXPECT().
 			GetUsersByTimePagination(
@@ -193,6 +197,69 @@ func TestUserService_GetUsersByTimePagination(t *testing.T) {
 				time.Time{},
 				0,
 			)
+
+			if tt.expectedErr == nil {
+				assert.Equal(t, tt.expectedUsers, users)
+			} else {
+				assert.ErrorIs(t, tt.expectedErr, serviceErr)
+			}
+		})
+	}
+}
+
+func TestUserService_SearchUserByUsername(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockUserRepository := mock.NewMockUserRepository(ctrl)
+	gomock.InOrder(
+		mockUserRepository.EXPECT().
+			SearchUserByUsername(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(""),
+				gomock.AssignableToTypeOf(0),
+			).
+			Return([]domain.User{
+				{
+					Username: "fetchedUser"},
+			}, nil),
+		mockUserRepository.EXPECT().
+			SearchUserByUsername(gomock.Any(),
+				gomock.AssignableToTypeOf(""),
+				gomock.AssignableToTypeOf(0),
+			).
+			Return(nil, domain.ErrInternalServerError),
+	)
+
+	s := service.NewUserService(mockUserRepository)
+	tests := []struct {
+		name          string
+		expectedUsers []domain.User
+		expectedErr   error
+	}{
+		{
+			name: "success",
+			expectedUsers: []domain.User{
+				{
+					Username: "fetchedUser",
+				},
+			},
+			expectedErr: nil,
+		}, {
+			name:          "error",
+			expectedUsers: nil,
+			expectedErr:   domain.ErrInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			users, serviceErr := s.SearchUserByUsername(
+				context.Background(),
+				&domain.Token{
+					TokenType: domain.AccessToken,
+					UserRole:  domain.Admin,
+				},
+				"",
+				1)
 
 			if tt.expectedErr == nil {
 				assert.Equal(t, tt.expectedUsers, users)

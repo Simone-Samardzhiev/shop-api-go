@@ -43,8 +43,10 @@ func NewRouter(
 		user := v1.Group("/users")
 		{
 			user.POST("/register", userHandler.Register)
-			user.GET("/users-pagination-by-offset", jwtMiddleware, userHandler.GetUsersByPages)
-			user.GET("/users-pagination-by-time", jwtMiddleware, userHandler.GetUsersByTimePagination)
+			user.Use(jwtMiddleware)
+			user.GET("/pagination-by-offset", userHandler.GetUsersByOffsetPagination)
+			user.GET("/pagination-by-time", userHandler.GetUsersByTimePagination)
+			user.GET("/search/by-username", userHandler.SearchUserByUsername)
 		}
 		auth := v1.Group("/auth")
 		{

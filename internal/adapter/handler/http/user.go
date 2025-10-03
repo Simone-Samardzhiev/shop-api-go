@@ -153,3 +153,35 @@ func (h *UserHandler) GetUsersByTimePagination(c *gin.Context) {
 		"cursor": nil,
 	})
 }
+
+// searchUserRequest represents a request body for searching a user by username.
+type searchUserRequest struct {
+	Username string `json:"username" binding:"required"`
+	Limit    int    `json:"limit" binding:"min=1"`
+}
+
+func (h *UserHandler) SearchUserByUsername(c *gin.Context) {
+	token, ok := c.Get("token")
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+	domainToken, ok := token.(*domain.Token)
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+
+	var req searchUserRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleBindingError(c, err)
+	}
+
+	users, err := h.userService.SearchUserByUsername(c, domainToken, req.Username, req.Limit)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, mapUsersToUserInfoResponse(users))
+}

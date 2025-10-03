@@ -63,3 +63,18 @@ func (s *UserService) GetUsersByTimePagination(ctx context.Context, token *domai
 	}
 	return users, nil
 }
+
+func (s *UserService) SearchUserByUsername(ctx context.Context, token *domain.Token, username string, limit int) ([]domain.User, error) {
+	if token.TokenType != domain.AccessToken {
+		return nil, domain.ErrInvalidTokenType
+	}
+	if token.UserRole != domain.Admin {
+		return nil, domain.ErrInvalidTokenRole
+	}
+
+	users, err := s.userRepository.SearchUserByUsername(ctx, username, limit)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
