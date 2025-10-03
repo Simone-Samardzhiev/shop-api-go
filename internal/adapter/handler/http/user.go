@@ -75,13 +75,13 @@ func mapUsersToUserInfoResponse(users []domain.User) []userInfoResponse {
 	return usersResponse
 }
 
-// usersByOffestPaginationRequest contains metadata used for user offest pagination.
+// usersByOffestPaginationRequest represents metadata for user offest pagination.
 type usersByOffestPaginationRequest struct {
 	Limit int `json:"limit" binding:"min=1"`
 	Page  int `json:"page" binding:"min=1"`
 }
 
-func (h *UserHandler) GetUsersByPages(c *gin.Context) {
+func (h *UserHandler) GetUsersByOffsetPagination(c *gin.Context) {
 	token, ok := c.Get("token")
 	if !ok {
 		handleError(c, domain.ErrInternalServerError)
@@ -108,6 +108,7 @@ func (h *UserHandler) GetUsersByPages(c *gin.Context) {
 	c.JSON(http.StatusOK, mapUsersToUserInfoResponse(users))
 }
 
+// usersByTimePaginationRequest represents metadata for user time pagination.
 type usersByTimePaginationRequest struct {
 	After time.Time `json:"after"`
 	Limit int       `json:"limit" binding:"min=1"`
