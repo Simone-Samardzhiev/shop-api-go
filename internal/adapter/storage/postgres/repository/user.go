@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"errors"
 	"shop-api-go/internal/core/domain"
+	"time"
 
 	"github.com/lib/pq"
 	"go.uber.org/zap"
@@ -121,6 +122,42 @@ func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, l
 			return users, domain.ErrInternalServerError
 		}
 
+		users = append(users, user)
+	}
+
+	return users, nil
+}
+
+func (r *UserRepository) GetUsersByTimePagination(ctx context.Context, after time.Time, limit int) ([]domain.User, error) {
+	rows, err := r.db.QueryContext(
+		ctx,
+		`SELECT id, username, email, role, created_at, updated_at FROM users
+		WHERE created_at > $1
+		ORDER BY created_at
+		LIMIT $2`,
+		after, limit,
+	)
+
+	if err != nil {
+		zap.L().Error("postgres/UserRepository.GetUsersByTimePagination failed", zap.Error(err))
+		return nil, domain.ErrInternalServerError
+	}
+
+	defer func() {
+		closeErr := rows.Close()
+		if closeErr != nil {
+			zap.L().Error("postgres/UserRepository.GetUsersByTimePagination failed", zap.Error(closeErr))
+		}
+	}()
+
+	var users []domain.User
+	for rows.Next() {
+		var user domain.User
+		err = rows.Scan(&user.Id, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+		if err != nil {
+			zap.L().Error("postgres/UserRepository.GetUsersByTimePagination failed", zap.Error(err))
+			return nil, domain.ErrInternalServerError
+		}
 		users = append(users, user)
 	}
 

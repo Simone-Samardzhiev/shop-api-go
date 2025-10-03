@@ -7,6 +7,7 @@ import (
 	"shop-api-go/internal/core/port/mock"
 	"shop-api-go/internal/core/service"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
@@ -80,12 +81,20 @@ func TestUserService_GetUsersByPages(t *testing.T) {
 	mockUserRepository := mock.NewMockUserRepository(ctrl)
 	gomock.InOrder(
 		mockUserRepository.EXPECT().
-			GetUsersByOffestPagination(gomock.Any(), gomock.AssignableToTypeOf(0), gomock.AssignableToTypeOf(0)).
+			GetUsersByOffestPagination(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(0),
+				gomock.AssignableToTypeOf(0),
+			).
 			Return([]domain.User{
 				{Username: "fetchedUser"},
 			}, nil),
 		mockUserRepository.EXPECT().
-			GetUsersByOffestPagination(gomock.Any(), gomock.AssignableToTypeOf(0), gomock.AssignableToTypeOf(0)).
+			GetUsersByOffestPagination(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(0),
+				gomock.AssignableToTypeOf(0),
+			).
 			Return(nil, domain.ErrInternalServerError),
 	)
 
@@ -112,9 +121,81 @@ func TestUserService_GetUsersByPages(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			fetchedUsers, serviceErr := s.GetUsersByOffestPagination(context.Background(), &domain.Token{TokenType: domain.AccessToken, UserRole: domain.Admin}, 0, 0)
+			fetchedUsers, serviceErr := s.GetUsersByOffestPagination(
+				context.Background(),
+				&domain.Token{
+					TokenType: domain.AccessToken,
+					UserRole:  domain.Admin,
+				},
+				0,
+				0,
+			)
+
 			if tt.expectedErr == nil {
 				assert.Equal(t, tt.expectedUsers, fetchedUsers)
+			} else {
+				assert.ErrorIs(t, tt.expectedErr, serviceErr)
+			}
+		})
+	}
+}
+
+func TestUserService_GetUsersByTimePagination(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockUserRepository := mock.NewMockUserRepository(ctrl)
+	gomock.InOrder(
+		mockUserRepository.EXPECT().
+			GetUsersByTimePagination(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(time.Time{}),
+				gomock.AssignableToTypeOf(0),
+			).
+			Return([]domain.User{
+				{Username: "fetchedUser"},
+			}, nil),
+		mockUserRepository.EXPECT().
+			GetUsersByTimePagination(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(time.Time{}),
+				gomock.AssignableToTypeOf(0),
+			).
+			Return(nil, domain.ErrInternalServerError),
+	)
+
+	s := service.NewUserService(mockUserRepository)
+	tests := []struct {
+		name          string
+		expectedUsers []domain.User
+		expectedErr   error
+	}{
+		{
+			name: "success",
+			expectedUsers: []domain.User{{
+				Username: "fetchedUser",
+			}},
+			expectedErr: nil,
+		},
+		{
+			name:          "error",
+			expectedUsers: nil,
+			expectedErr:   domain.ErrInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			users, serviceErr := s.GetUsersByTimePagination(
+				context.Background(),
+				&domain.Token{
+					TokenType: domain.AccessToken,
+					UserRole:  domain.Admin,
+				},
+				time.Time{},
+				0,
+			)
+
+			if tt.expectedErr == nil {
+				assert.Equal(t, tt.expectedUsers, users)
 			} else {
 				assert.ErrorIs(t, tt.expectedErr, serviceErr)
 			}

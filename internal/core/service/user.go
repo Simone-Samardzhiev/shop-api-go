@@ -12,12 +12,12 @@ import (
 
 // UserService implements port.UserService interface and provides access to user-related business logic.
 type UserService struct {
-	ur port.UserRepository
+	userRepository port.UserRepository
 }
 
 // NewUserService creates a new UserService instance.
 func NewUserService(ur port.UserRepository) *UserService {
-	return &UserService{ur: ur}
+	return &UserService{userRepository: ur}
 }
 
 func (s *UserService) Register(ctx context.Context, user *domain.User) error {
@@ -31,7 +31,7 @@ func (s *UserService) Register(ctx context.Context, user *domain.User) error {
 		return domain.ErrInternalServerError
 	}
 	user.Password = string(hash)
-	return s.ur.AddUser(ctx, user)
+	return s.userRepository.AddUser(ctx, user)
 }
 
 func (s *UserService) GetUsersByOffestPagination(ctx context.Context, token *domain.Token, page, limit int) ([]domain.User, error) {
@@ -42,7 +42,22 @@ func (s *UserService) GetUsersByOffestPagination(ctx context.Context, token *dom
 		return nil, domain.ErrInvalidTokenRole
 	}
 
-	users, err := s.ur.GetUsersByOffestPagination(ctx, page, limit)
+	users, err := s.userRepository.GetUsersByOffestPagination(ctx, page, limit)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}
+
+func (s *UserService) GetUsersByTimePagination(ctx context.Context, token *domain.Token, after time.Time, limit int) ([]domain.User, error) {
+	if token.TokenType != domain.AccessToken {
+		return nil, domain.ErrInvalidTokenType
+	}
+	if token.UserRole != domain.Admin {
+		return nil, domain.ErrInvalidTokenRole
+	}
+
+	users, err := s.userRepository.GetUsersByTimePagination(ctx, after, limit)
 	if err != nil {
 		return nil, err
 	}

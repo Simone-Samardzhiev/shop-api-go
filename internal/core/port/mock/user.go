@@ -13,6 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 	domain "shop-api-go/internal/core/domain"
+	time "time"
 
 	gomock "go.uber.org/mock/gomock"
 )
@@ -85,6 +86,21 @@ func (mr *MockUserRepositoryMockRecorder) GetUsersByOffestPagination(ctx, page, 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByOffestPagination", reflect.TypeOf((*MockUserRepository)(nil).GetUsersByOffestPagination), ctx, page, limit)
 }
 
+// GetUsersByTimePagination mocks base method.
+func (m *MockUserRepository) GetUsersByTimePagination(ctx context.Context, after time.Time, limit int) ([]domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsersByTimePagination", ctx, after, limit)
+	ret0, _ := ret[0].([]domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsersByTimePagination indicates an expected call of GetUsersByTimePagination.
+func (mr *MockUserRepositoryMockRecorder) GetUsersByTimePagination(ctx, after, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByTimePagination", reflect.TypeOf((*MockUserRepository)(nil).GetUsersByTimePagination), ctx, after, limit)
+}
+
 // MockUserService is a mock of UserService interface.
 type MockUserService struct {
 	ctrl     *gomock.Controller
@@ -122,6 +138,21 @@ func (m *MockUserService) GetUsersByOffestPagination(ctx context.Context, token 
 func (mr *MockUserServiceMockRecorder) GetUsersByOffestPagination(ctx, token, page, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByOffestPagination", reflect.TypeOf((*MockUserService)(nil).GetUsersByOffestPagination), ctx, token, page, limit)
+}
+
+// GetUsersByTimePagination mocks base method.
+func (m *MockUserService) GetUsersByTimePagination(ctx context.Context, token *domain.Token, after time.Time, limit int) ([]domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUsersByTimePagination", ctx, token, after, limit)
+	ret0, _ := ret[0].([]domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUsersByTimePagination indicates an expected call of GetUsersByTimePagination.
+func (mr *MockUserServiceMockRecorder) GetUsersByTimePagination(ctx, token, after, limit any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByTimePagination", reflect.TypeOf((*MockUserService)(nil).GetUsersByTimePagination), ctx, token, after, limit)
 }
 
 // Register mocks base method.

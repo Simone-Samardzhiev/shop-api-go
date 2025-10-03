@@ -12,13 +12,13 @@ import (
 
 // UserHandler represents HTTP handler for user-related requests.
 type UserHandler struct {
-	us *service.UserService
+	userService *service.UserService
 }
 
 // NewUserHandler returns a new UserHandler instance.
-func NewUserHandler(us *service.UserService) *UserHandler {
+func NewUserHandler(userService *service.UserService) *UserHandler {
 	return &UserHandler{
-		us: us,
+		userService: userService,
 	}
 }
 
@@ -29,14 +29,14 @@ type registerRequest struct {
 	Password string `json:"password" binding:"required,password"`
 }
 
-func (uh *UserHandler) Register(c *gin.Context) {
+func (h *UserHandler) Register(c *gin.Context) {
 	var req registerRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindingError(c, err)
 		return
 	}
 
-	err := uh.us.Register(c, &domain.User{
+	err := h.userService.Register(c, &domain.User{
 		Email:    req.Email,
 		Username: req.Username,
 		Password: req.Password,
@@ -59,8 +59,8 @@ type userInfoResponse struct {
 	UpdatedAt time.Time       `json:"updated_at"`
 }
 
-// mapUsersToUsersInfoResponse transforms a slice of domain.User to a slice of userInfoResponse.
-func mapUsersToUsersInfoResponse(users []domain.User) []userInfoResponse {
+// mapUsersToUserInfoResponse transforms a slice of domain.User to a slice of userInfoResponse.
+func mapUsersToUserInfoResponse(users []domain.User) []userInfoResponse {
 	usersResponse := make([]userInfoResponse, len(users))
 	for i, user := range users {
 		usersResponse[i] = userInfoResponse{
@@ -75,13 +75,13 @@ func mapUsersToUsersInfoResponse(users []domain.User) []userInfoResponse {
 	return usersResponse
 }
 
-// getUsersByOffestPagination contains metadata used for user offest pagination.
-type getUsersByOffestPagination struct {
+// usersByOffestPaginationRequest contains metadata used for user offest pagination.
+type usersByOffestPaginationRequest struct {
 	Limit int `json:"limit" binding:"min=1"`
 	Page  int `json:"page" binding:"min=1"`
 }
 
-func (uh *UserHandler) GetUsersByPages(c *gin.Context) {
+func (h *UserHandler) GetUsersByPages(c *gin.Context) {
 	token, ok := c.Get("token")
 	if !ok {
 		handleError(c, domain.ErrInternalServerError)
@@ -93,17 +93,62 @@ func (uh *UserHandler) GetUsersByPages(c *gin.Context) {
 		handleError(c, domain.ErrInternalServerError)
 	}
 
-	var req getUsersByOffestPagination
+	var req usersByOffestPaginationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindingError(c, err)
 		return
 	}
 
-	users, err := uh.us.GetUsersByOffestPagination(c, domainToken, req.Page, req.Limit)
+	users, err := h.userService.GetUsersByOffestPagination(c, domainToken, req.Page, req.Limit)
 	if err != nil {
 		handleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, mapUsersToUsersInfoResponse(users))
+	c.JSON(http.StatusOK, mapUsersToUserInfoResponse(users))
+}
+
+type usersByTimePaginationRequest struct {
+	After time.Time `json:"after"`
+	Limit int       `json:"limit" binding:"min=1"`
+}
+
+func (h *UserHandler) GetUsersByTimePagination(c *gin.Context) {
+	token, ok := c.Get("token")
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+	domainToken, ok := token.(*domain.Token)
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+
+	var req usersByTimePaginationRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleBindingError(c, err)
+		return
+	}
+
+	users, err := h.userService.GetUsersByTimePagination(c, domainToken, req.After, req.Limit)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	userInfo := mapUsersToUserInfoResponse(users)
+	if len(userInfo) != 0 {
+		cursor := userInfo[len(userInfo)-1].UpdatedAt
+		c.JSON(http.StatusOK, gin.H{
+			"users":  userInfo,
+			"cursor": cursor,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"users":  userInfo,
+		"cursor": nil,
+	})
 }
