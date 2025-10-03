@@ -89,7 +89,6 @@ func (r *UserRepository) GetUserByUsername(ctx context.Context, username string)
 }
 
 func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, limit int) ([]domain.User, error) {
-	var users []domain.User
 	rows, err := r.db.QueryContext(
 		ctx,
 		`SELECT id, username, email, role, created_at, updated_at 
@@ -104,7 +103,7 @@ func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, l
 			zap.Int("limit", limit),
 			zap.Error(err),
 		)
-		return users, domain.ErrInternalServerError
+		return nil, domain.ErrInternalServerError
 	}
 
 	defer func() {
@@ -114,6 +113,7 @@ func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, l
 		}
 	}()
 
+	users := make([]domain.User, 0, limit)
 	for rows.Next() {
 		var user domain.User
 		scanErr := rows.Scan(&user.Id, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
@@ -150,7 +150,7 @@ func (r *UserRepository) GetUsersByTimePagination(ctx context.Context, after tim
 		}
 	}()
 
-	var users []domain.User
+	users := make([]domain.User, 0, limit)
 	for rows.Next() {
 		var user domain.User
 		err = rows.Scan(&user.Id, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
