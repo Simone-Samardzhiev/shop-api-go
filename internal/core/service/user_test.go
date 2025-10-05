@@ -391,3 +391,62 @@ func TestUserService_GetUserById(t *testing.T) {
 		})
 	}
 }
+
+func TestUserService_UpdateUsername(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockUserRepository := mock.NewMockUserRepository(ctrl)
+	gomock.InOrder(
+		mockUserRepository.EXPECT().
+			UpdateUsername(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(uuid.UUID{}),
+				gomock.AssignableToTypeOf("")).
+			Return(nil),
+		mockUserRepository.EXPECT().
+			UpdateUsername(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(uuid.UUID{}),
+				gomock.AssignableToTypeOf("")).
+			Return(domain.ErrUserNotFound),
+		mockUserRepository.EXPECT().
+			UpdateUsername(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(uuid.UUID{}),
+				gomock.AssignableToTypeOf("")).
+			Return(domain.ErrInternalServerError),
+	)
+
+	s := service.NewUserService(mockUserRepository)
+
+	tests := []struct {
+		name        string
+		expectedErr error
+	}{
+		{
+			name:        "success",
+			expectedErr: nil,
+		}, {
+			name:        "not found",
+			expectedErr: domain.ErrUserNotFound,
+		}, {
+			name:        "error",
+			expectedErr: domain.ErrInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			serviceErr := s.UpdateUsername(
+				context.Background(),
+				&domain.Token{
+					TokenType: domain.AccessToken,
+					UserRole:  domain.Admin,
+				},
+				uuid.UUID{},
+				"",
+			)
+
+			assert.ErrorIs(t, serviceErr, tt.expectedErr)
+		})
+	}
+}

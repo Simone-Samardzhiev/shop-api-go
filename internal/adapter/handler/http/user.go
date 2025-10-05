@@ -249,3 +249,36 @@ func (h *UserHandler) GetUserById(c *gin.Context) {
 	}
 	c.JSON(http.StatusOK, user)
 }
+
+// updateUsernameRequest represent a request body to update username.
+type updateUsernameRequest struct {
+	Username string    `json:"username" binding:"required,min_bytes=8,max_bytes=255"`
+	Id       uuid.UUID `json:"id" binding:"required"`
+}
+
+func (h *UserHandler) UpdateUsername(c *gin.Context) {
+	token, ok := c.Get("token")
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+
+	domainToken, ok := token.(*domain.Token)
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+	}
+
+	var req updateUsernameRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleBindingError(c, err)
+		return
+	}
+
+	err := h.userService.UpdateUsername(c, domainToken, req.Id, req.Username)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	c.Status(http.StatusOK)
+}

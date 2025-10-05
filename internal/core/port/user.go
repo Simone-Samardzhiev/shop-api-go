@@ -24,6 +24,8 @@ type UserRepository interface {
 	SearchUserByEmail(ctx context.Context, email string, limit int) ([]domain.User, error)
 	// GetUserById fetches a user by specific.
 	GetUserById(ctx context.Context, id uuid.UUID) (*domain.User, error)
+	// UpdateUsername updates the username of specific user by id.
+	UpdateUsername(ctx context.Context, id uuid.UUID, username string) error
 }
 
 // UserService is an interface for interacting with user-related business logic.
@@ -40,4 +42,6 @@ type UserService interface {
 	SearchUserByEmail(ctx context.Context, token *domain.Token, email string, limit int) ([]domain.User, error) // GetUserById fetches a user by specific.
 	// GetUserById fetches a user by specific.
 	GetUserById(ctx context.Context, token *domain.Token, id uuid.UUID) (*domain.User, error)
+	// UpdateUsername updates the username of specific user by id.
+	UpdateUsername(ctx context.Context, token *domain.Token, id uuid.UUID, username string) error
 }

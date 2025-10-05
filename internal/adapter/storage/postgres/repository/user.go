@@ -258,3 +258,36 @@ func (r *UserRepository) GetUserById(ctx context.Context, id uuid.UUID) (*domain
 	}
 	return &user, nil
 }
+
+func (r *UserRepository) UpdateUsername(ctx context.Context, id uuid.UUID, username string) error {
+	result, err := r.db.ExecContext(
+		ctx,
+		`UPDATE users 
+		SET username = $1
+		WHERE id = $2`,
+		username,
+		id,
+	)
+
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return domain.ErrUsernameAlreadyInUse
+		}
+
+		zap.L().Error("postgres/UserRepository.UpdateUsername failed", zap.Error(err))
+		return domain.ErrInternalServerError
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		zap.L().Error("postgres/UserRepository.UpdateUsername failed", zap.Error(err))
+		return domain.ErrInternalServerError
+	}
+
+	if rowsAffected == 0 {
+		return domain.ErrInternalServerError
+	}
+
+	return nil
+}

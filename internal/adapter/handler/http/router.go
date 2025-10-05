@@ -50,6 +50,7 @@ func NewRouter(
 				admin.GET("/search/by-username", userHandler.SearchUserByUsername)
 				admin.GET("/search/by-email", userHandler.SearchUserByEmail)
 				admin.GET("/by-id", userHandler.GetUserById)
+				admin.GET("/update/username", userHandler.UpdateUsername)
 			}
 		}
 		auth := v1.Group("/auth")

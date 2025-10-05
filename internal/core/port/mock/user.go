@@ -147,6 +147,20 @@ func (mr *MockUserRepositoryMockRecorder) SearchUserByUsername(ctx, username, li
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUserByUsername", reflect.TypeOf((*MockUserRepository)(nil).SearchUserByUsername), ctx, username, limit)
 }
 
+// UpdateUsername mocks base method.
+func (m *MockUserRepository) UpdateUsername(ctx context.Context, id uuid.UUID, username string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUsername", ctx, id, username)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUsername indicates an expected call of UpdateUsername.
+func (mr *MockUserRepositoryMockRecorder) UpdateUsername(ctx, id, username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUsername", reflect.TypeOf((*MockUserRepository)(nil).UpdateUsername), ctx, id, username)
+}
+
 // MockUserService is a mock of UserService interface.
 type MockUserService struct {
 	ctrl     *gomock.Controller
@@ -258,4 +272,18 @@ func (m *MockUserService) SearchUserByUsername(ctx context.Context, token *domai
 func (mr *MockUserServiceMockRecorder) SearchUserByUsername(ctx, token, username, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUserByUsername", reflect.TypeOf((*MockUserService)(nil).SearchUserByUsername), ctx, token, username, limit)
+}
+
+// UpdateUsername mocks base method.
+func (m *MockUserService) UpdateUsername(ctx context.Context, token *domain.Token, id uuid.UUID, username string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUsername", ctx, token, id, username)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUsername indicates an expected call of UpdateUsername.
+func (mr *MockUserServiceMockRecorder) UpdateUsername(ctx, token, id, username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUsername", reflect.TypeOf((*MockUserService)(nil).UpdateUsername), ctx, token, id, username)
 }

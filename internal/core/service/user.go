@@ -108,3 +108,14 @@ func (s *UserService) GetUserById(ctx context.Context, token *domain.Token, id u
 	}
 	return user, nil
 }
+
+func (s *UserService) UpdateUsername(ctx context.Context, token *domain.Token, id uuid.UUID, username string) error {
+	if token.TokenType != domain.AccessToken {
+		return domain.ErrInvalidTokenType
+	}
+	if token.UserRole != domain.Admin {
+		return domain.ErrInvalidTokenRole
+	}
+
+	return s.userRepository.UpdateUsername(ctx, id, username)
+}
