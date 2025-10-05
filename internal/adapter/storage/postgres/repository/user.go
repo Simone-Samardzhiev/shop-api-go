@@ -57,10 +57,10 @@ func (r *UserRepository) AddUser(ctx context.Context, user *domain.User) error {
 					return domain.ErrInternalServerError
 				}
 			}
-		} else {
-			zap.L().Error("postgres/UserRepository.AddUser failed", zap.Error(err))
-			return domain.ErrInternalServerError
 		}
+
+		zap.L().Error("postgres/UserRepository.AddUser failed", zap.Error(err))
+		return domain.ErrInternalServerError
 	}
 	return nil
 }
