@@ -18,6 +18,7 @@ func NewRouter(
 	appConfig *config.AppConfig,
 	tokenGenerator port.TokenGenerator,
 	userHandler *UserHandler,
+	adminHandler *AdminHandler,
 	authHandler *AuthHandler,
 ) *Router {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
@@ -43,16 +44,18 @@ func NewRouter(
 		user := v1.Group("/users")
 		{
 			user.POST("/register", userHandler.Register)
-			admin := user.Group("/admin")
-			{
-				admin.GET("/pagination-by-offset", userHandler.GetUsersByOffsetPagination)
-				admin.GET("/pagination-by-time", userHandler.GetUsersByTimePagination)
-				admin.GET("/search/by-username", userHandler.SearchUserByUsername)
-				admin.GET("/search/by-email", userHandler.SearchUserByEmail)
-				admin.GET("/by-id", userHandler.GetUserById)
-				admin.GET("/update/username", userHandler.UpdateUsername)
-			}
 		}
+
+		admin := v1.Group("/admin")
+		{
+			admin.GET("/pagination-by-offset", adminHandler.GetUsersByOffsetPagination)
+			admin.GET("/pagination-by-time", adminHandler.GetUsersByTimePagination)
+			admin.GET("/search/by-username", adminHandler.SearchUserByUsername)
+			admin.GET("/search/by-email", adminHandler.SearchUserByEmail)
+			admin.GET("/by-id", adminHandler.GetUserById)
+			admin.POST("/update/username", adminHandler.UpdateUsername)
+		}
+
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/login", authHandler.Login)

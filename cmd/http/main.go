@@ -54,6 +54,8 @@ func main() {
 	userService := service.NewUserService(userRepository)
 	userHandler := http.NewUserHandler(userService)
 
+	adminHandler := http.NewAdminHandler(userService)
+
 	tokenRepository := repository.NewTokenRepository(db)
 	jwtTokenGenerator := jwt.NewTokenGenerator(container.JWT)
 	authService := service.NewAuthService(jwtTokenGenerator, tokenRepository, userRepository)
@@ -63,7 +65,7 @@ func main() {
 	defer cancel()
 	util.StartDeleteExpiredTokensTask(ctx, tokenRepository, time.Hour)
 
-	router := http.NewRouter(container.App, jwtTokenGenerator, userHandler, authHandler)
+	router := http.NewRouter(container.App, jwtTokenGenerator, userHandler, adminHandler, authHandler)
 	err = router.Start()
 	if err != nil {
 		zap.L().Error("Error starting http server", zap.Error(err))
