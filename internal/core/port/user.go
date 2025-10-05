@@ -4,6 +4,8 @@ import (
 	"context"
 	"shop-api-go/internal/core/domain"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 // UserRepository is an interface for interacting with user-related data.
@@ -20,6 +22,8 @@ type UserRepository interface {
 	SearchUserByUsername(ctx context.Context, username string, limit int) ([]domain.User, error)
 	// SearchUserByEmail searches for users with similar to the provided email.
 	SearchUserByEmail(ctx context.Context, email string, limit int) ([]domain.User, error)
+	// GetUserById fetches a user by specific.
+	GetUserById(ctx context.Context, id uuid.UUID) (*domain.User, error)
 }
 
 // UserService is an interface for interacting with user-related business logic.
@@ -33,5 +37,7 @@ type UserService interface {
 	// SearchUserByUsername searches for users with similar to the provided username.
 	SearchUserByUsername(ctx context.Context, token *domain.Token, username string, limit int) ([]domain.User, error)
 	// SearchUserByEmail searches for users with similar to the provided email.
-	SearchUserByEmail(ctx context.Context, token *domain.Token, email string, limit int) ([]domain.User, error)
+	SearchUserByEmail(ctx context.Context, token *domain.Token, email string, limit int) ([]domain.User, error) // GetUserById fetches a user by specific.
+	// GetUserById fetches a user by specific.
+	GetUserById(ctx context.Context, token *domain.Token, id uuid.UUID) (*domain.User, error)
 }

@@ -9,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"go.uber.org/mock/gomock"
 )
@@ -328,6 +329,64 @@ func TestUserService_SearchUserByEmail(t *testing.T) {
 				assert.Equal(t, tt.expectedUsers, users)
 			} else {
 				assert.ErrorIs(t, tt.expectedErr, serviceErr)
+			}
+		})
+	}
+}
+
+func TestUserService_GetUserById(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	mockUserRepository := mock.NewMockUserRepository(ctrl)
+	gomock.InOrder(
+		mockUserRepository.EXPECT().
+			GetUserById(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(uuid.UUID{})).
+			Return(&domain.User{
+				Username: "fetchedUser",
+			}, nil),
+		mockUserRepository.EXPECT().
+			GetUserById(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(uuid.UUID{})).
+			Return(nil, domain.ErrInternalServerError),
+	)
+
+	s := service.NewUserService(mockUserRepository)
+
+	tests := []struct {
+		name         string
+		expectedUser *domain.User
+		expectedErr  error
+	}{
+		{
+			name: "success",
+			expectedUser: &domain.User{
+				Username: "fetchedUser",
+			},
+			expectedErr: nil,
+		}, {
+			name:         "error",
+			expectedUser: nil,
+			expectedErr:  domain.ErrInternalServerError,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			user, err := s.GetUserById(
+				context.Background(),
+				&domain.Token{
+					TokenType: domain.AccessToken,
+					UserRole:  domain.Admin,
+				},
+				uuid.UUID{},
+			)
+
+			if tt.expectedErr == nil {
+				assert.Equal(t, tt.expectedUser, user)
+			} else {
+				assert.ErrorIs(t, err, tt.expectedErr)
 			}
 		})
 	}

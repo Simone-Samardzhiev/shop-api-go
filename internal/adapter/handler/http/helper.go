@@ -38,6 +38,10 @@ var errMap = map[error]errorResponse{
 		code:       "WRONG_CREDENTIALS",
 		messages:   []string{"Wrong credentials."},
 		statusCode: http.StatusUnauthorized,
+	}, domain.ErrUserNotFound: {
+		code:       "USER_NOT_FOUND",
+		messages:   []string{"User not found."},
+		statusCode: http.StatusNotFound,
 	},
 	domain.ErrInvalidToken: {
 		code:       "INVALID_TOKEN",

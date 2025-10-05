@@ -13,6 +13,8 @@ var (
 	ErrUsernameAlreadyInUse = errors.New("username already exist")
 	// ErrWrongCredentials is an error for when user's credentials are wrong.
 	ErrWrongCredentials = errors.New("wrong credentials")
+	// ErrUserNotFound is an error for when user couldn't be found.
+	ErrUserNotFound = errors.New("user not found")
 	// ErrInvalidToken is an error for when token parsing fails.
 	ErrInvalidToken = errors.New("invalid token")
 	// ErrInvalidTokenType is an error for when user use invalid token type.

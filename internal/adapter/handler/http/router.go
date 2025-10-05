@@ -48,6 +48,7 @@ func NewRouter(
 			user.GET("/pagination-by-time", userHandler.GetUsersByTimePagination)
 			user.GET("/search/by-username", userHandler.SearchUserByUsername)
 			user.GET("/search/by-email", userHandler.SearchUserByEmail)
+			user.GET("/by-id", userHandler.GetUserById)
 		}
 		auth := v1.Group("/auth")
 		{

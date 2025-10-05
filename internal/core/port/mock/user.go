@@ -15,6 +15,7 @@ import (
 	domain "shop-api-go/internal/core/domain"
 	time "time"
 
+	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -54,6 +55,21 @@ func (m *MockUserRepository) AddUser(ctx context.Context, user *domain.User) err
 func (mr *MockUserRepositoryMockRecorder) AddUser(ctx, user any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddUser", reflect.TypeOf((*MockUserRepository)(nil).AddUser), ctx, user)
+}
+
+// GetUserById mocks base method.
+func (m *MockUserRepository) GetUserById(ctx context.Context, id uuid.UUID) (*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserById", ctx, id)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserById indicates an expected call of GetUserById.
+func (mr *MockUserRepositoryMockRecorder) GetUserById(ctx, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserById", reflect.TypeOf((*MockUserRepository)(nil).GetUserById), ctx, id)
 }
 
 // GetUserByUsername mocks base method.
@@ -153,6 +169,21 @@ func NewMockUserService(ctrl *gomock.Controller) *MockUserService {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockUserService) EXPECT() *MockUserServiceMockRecorder {
 	return m.recorder
+}
+
+// GetUserById mocks base method.
+func (m *MockUserService) GetUserById(ctx context.Context, token *domain.Token, id uuid.UUID) (*domain.User, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetUserById", ctx, token, id)
+	ret0, _ := ret[0].(*domain.User)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetUserById indicates an expected call of GetUserById.
+func (mr *MockUserServiceMockRecorder) GetUserById(ctx, token, id any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserById", reflect.TypeOf((*MockUserService)(nil).GetUserById), ctx, token, id)
 }
 
 // GetUsersByOffestPagination mocks base method.

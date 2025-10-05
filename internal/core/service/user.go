@@ -93,3 +93,18 @@ func (s *UserService) SearchUserByEmail(ctx context.Context, token *domain.Token
 	}
 	return users, nil
 }
+
+func (s *UserService) GetUserById(ctx context.Context, token *domain.Token, id uuid.UUID) (*domain.User, error) {
+	if token.TokenType != domain.AccessToken {
+		return nil, domain.ErrInvalidTokenType
+	}
+	if token.UserRole != domain.Admin {
+		return nil, domain.ErrInvalidTokenRole
+	}
+
+	user, err := s.userRepository.GetUserById(ctx, id)
+	if err != nil {
+		return nil, err
+	}
+	return user, nil
+}

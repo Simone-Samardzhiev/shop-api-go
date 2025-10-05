@@ -218,3 +218,34 @@ func (h *UserHandler) SearchUserByEmail(c *gin.Context) {
 
 	c.JSON(http.StatusOK, mapUsersToUserInfoResponse(users))
 }
+
+// getUserByIdRequest represents a request body for getting a user by id.
+type getUserByIdRequest struct {
+	Id uuid.UUID `json:"id" binding:"required"`
+}
+
+func (h *UserHandler) GetUserById(c *gin.Context) {
+	token, ok := c.Get("token")
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+
+	domainToken, ok := token.(*domain.Token)
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+
+	var req getUserByIdRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleBindingError(c, err)
+	}
+
+	user, err := h.userService.GetUserById(c, domainToken, req.Id)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.JSON(http.StatusOK, user)
+}

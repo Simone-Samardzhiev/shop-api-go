@@ -7,6 +7,7 @@ import (
 	"shop-api-go/internal/core/domain"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/lib/pq"
 	"go.uber.org/zap"
 )
@@ -237,4 +238,23 @@ func (r *UserRepository) SearchUserByEmail(ctx context.Context, email string, li
 	}
 
 	return users, nil
+}
+
+func (r *UserRepository) GetUserById(ctx context.Context, id uuid.UUID) (*domain.User, error) {
+	row := r.db.QueryRowContext(
+		ctx,
+		`SELECT id, username, email, role, created_at, updated_at 
+		FROM users WHERE id = $1`,
+		id)
+
+	var user domain.User
+	err := row.Scan(&user.Id, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, domain.ErrUserNotFound
+	} else if err != nil {
+		zap.L().Error("postgres/UserRepository.GetUserById failed", zap.Error(err))
+		return nil, domain.ErrInternalServerError
+	}
+	return &user, nil
 }
