@@ -78,3 +78,18 @@ func (s *UserService) SearchUserByUsername(ctx context.Context, token *domain.To
 	}
 	return users, nil
 }
+
+func (s *UserService) SearchUserByEmail(ctx context.Context, token *domain.Token, email string, limit int) ([]domain.User, error) {
+	if token.TokenType != domain.AccessToken {
+		return nil, domain.ErrInvalidTokenType
+	}
+	if token.UserRole != domain.Admin {
+		return nil, domain.ErrInvalidTokenRole
+	}
+
+	users, err := s.userRepository.SearchUserByEmail(ctx, email, limit)
+	if err != nil {
+		return nil, err
+	}
+	return users, nil
+}

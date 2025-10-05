@@ -18,6 +18,8 @@ type UserRepository interface {
 	GetUsersByTimePagination(ctx context.Context, after time.Time, limit int) ([]domain.User, error)
 	// SearchUserByUsername searches for users with similar to the provided username.
 	SearchUserByUsername(ctx context.Context, username string, limit int) ([]domain.User, error)
+	// SearchUserByEmail searches for users with similar to the provided email.
+	SearchUserByEmail(ctx context.Context, email string, limit int) ([]domain.User, error)
 }
 
 // UserService is an interface for interacting with user-related business logic.
@@ -30,4 +32,6 @@ type UserService interface {
 	GetUsersByTimePagination(ctx context.Context, token *domain.Token, after time.Time, limit int) ([]domain.User, error)
 	// SearchUserByUsername searches for users with similar to the provided username.
 	SearchUserByUsername(ctx context.Context, token *domain.Token, username string, limit int) ([]domain.User, error)
+	// SearchUserByEmail searches for users with similar to the provided email.
+	SearchUserByEmail(ctx context.Context, token *domain.Token, email string, limit int) ([]domain.User, error)
 }

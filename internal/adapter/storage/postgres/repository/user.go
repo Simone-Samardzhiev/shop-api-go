@@ -200,3 +200,41 @@ func (r *UserRepository) SearchUserByUsername(ctx context.Context, username stri
 
 	return users, nil
 }
+
+func (r *UserRepository) SearchUserByEmail(ctx context.Context, email string, limit int) ([]domain.User, error) {
+	rows, err := r.db.QueryContext(
+		ctx,
+		`SELECT id, username, email, role, created_at, updated_at FROM users
+		WHERE similarity(email, $1) > 0.6
+		ORDER BY similarity(email, $1) DESC
+		limit $2`,
+		email,
+		limit,
+	)
+
+	if err != nil {
+		zap.L().Error("postgres/UserRepository.SearchUserByEmail failed", zap.Error(err))
+		return nil, domain.ErrInternalServerError
+	}
+
+	defer func() {
+		closeErr := rows.Close()
+		if closeErr != nil {
+			zap.L().Error("postgres/UserRepository.SearchUserByEmail failed", zap.Error(closeErr))
+		}
+	}()
+
+	users := make([]domain.User, 0, limit)
+	for rows.Next() {
+		var user domain.User
+		err = rows.Scan(&user.Id, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+		if err != nil {
+			zap.L().Error("postgres/UserRepository.SearchUserByEmail failed", zap.Error(err))
+			return nil, domain.ErrInternalServerError
+		}
+
+		users = append(users, user)
+	}
+
+	return users, nil
+}

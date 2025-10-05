@@ -185,3 +185,36 @@ func (h *UserHandler) SearchUserByUsername(c *gin.Context) {
 
 	c.JSON(http.StatusOK, mapUsersToUserInfoResponse(users))
 }
+
+// searchUserByEmailRequest represents a request body for searching a user by email.
+type searchUserByEmailRequest struct {
+	Email string `json:"email" binding:"required"`
+	Limit int    `json:"limit" binding:"min=1"`
+}
+
+func (h *UserHandler) SearchUserByEmail(c *gin.Context) {
+	token, ok := c.Get("token")
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+	domainToken, ok := token.(*domain.Token)
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+
+	var req searchUserByEmailRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleBindingError(c, err)
+		return
+	}
+
+	users, err := h.userService.SearchUserByEmail(c, domainToken, req.Email, req.Limit)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	c.JSON(http.StatusOK, mapUsersToUserInfoResponse(users))
+}
