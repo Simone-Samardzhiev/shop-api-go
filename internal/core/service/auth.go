@@ -9,12 +9,14 @@ import (
 	"github.com/google/uuid"
 )
 
+// AuthService implements port.AuthService interface and provides access to admin-related business logic.
 type AuthService struct {
 	tokenGenerator  port.TokenGenerator
 	tokenRepository port.TokenRepository
 	userRepository  port.UserRepository
 }
 
+// NewAuthService creates a new AuthService instance.
 func NewAuthService(tokenGenerator port.TokenGenerator, tokenRepository port.TokenRepository, userRepository port.UserRepository) *AuthService {
 	return &AuthService{
 		tokenGenerator:  tokenGenerator,

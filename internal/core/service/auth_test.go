@@ -113,53 +113,75 @@ func TestAuthService_Login(t *testing.T) {
 }
 
 func TestAuthService_RefreshToken(t *testing.T) {
-	mockTokenGenerator := mock.NewMockTokenGenerator(gomock.NewController(t))
-	mockTokenRepository := mock.NewMockTokenRepository(gomock.NewController(t))
-	mockUserRepository := mock.NewMockUserRepository(gomock.NewController(t))
+	ctrl := gomock.NewController(t)
+	mockTokenGenerator := mock.NewMockTokenGenerator(ctrl)
+	mockTokenRepository := mock.NewMockTokenRepository(ctrl)
+	mockUserRepository := mock.NewMockUserRepository(ctrl)
 
 	gomock.InOrder(
-		// Test 1(success)
+		// Test 1
 		mockTokenRepository.EXPECT().
-			DeleteToken(gomock.Any(), gomock.AssignableToTypeOf(uuid.UUID{})).
+			DeleteToken(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(uuid.UUID{}),
+			).
 			Return(true, nil),
 		mockTokenGenerator.EXPECT().
 			SignToken(gomock.AssignableToTypeOf(&domain.Token{})).
 			Return("token", nil).
 			Times(2),
 		mockTokenRepository.EXPECT().
-			AddToken(gomock.Any(), gomock.AssignableToTypeOf(&domain.Token{})).
+			AddToken(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(&domain.Token{}),
+			).
 			Return(nil),
 
-		// Test 2(invalid token)
+		// Test 3
 		mockTokenRepository.EXPECT().
-			DeleteToken(gomock.Any(), gomock.AssignableToTypeOf(uuid.UUID{})).
-			Return(false, nil),
-
-		// Test 3(error deleting token)
-		mockTokenRepository.EXPECT().
-			DeleteToken(gomock.Any(), gomock.AssignableToTypeOf(uuid.UUID{})).
+			DeleteToken(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(uuid.UUID{}),
+			).
 			Return(false, domain.ErrInternalServerError),
 
-		// Test 4(error signing token)
+		// Test 4
 		mockTokenRepository.EXPECT().
-			DeleteToken(gomock.Any(), gomock.AssignableToTypeOf(uuid.UUID{})).
+			DeleteToken(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(uuid.UUID{}),
+			).
+			Return(false, nil),
+
+		// Test 5
+		mockTokenRepository.EXPECT().
+			DeleteToken(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(uuid.UUID{}),
+			).
 			Return(true, nil),
 		mockTokenGenerator.EXPECT().
-			SignToken(gomock.AssignableToTypeOf(&domain.Token{})).Return("", domain.ErrInternalServerError),
+			SignToken(gomock.AssignableToTypeOf(&domain.Token{})).
+			Return("", domain.ErrInternalServerError),
 
-		// Test 5(error adding token)
+		// Test 6
 		mockTokenRepository.EXPECT().
-			DeleteToken(gomock.Any(), gomock.AssignableToTypeOf(uuid.UUID{})).
+			DeleteToken(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(uuid.UUID{}),
+			).
 			Return(true, nil),
 		mockTokenGenerator.EXPECT().
 			SignToken(gomock.AssignableToTypeOf(&domain.Token{})).
 			Return("token", nil).
 			Times(2),
-		mockTokenRepository.EXPECT().AddToken(gomock.Any(), gomock.AssignableToTypeOf(&domain.Token{})).
+		mockTokenRepository.EXPECT().
+			AddToken(
+				gomock.Any(),
+				gomock.AssignableToTypeOf(&domain.Token{}),
+			).
 			Return(domain.ErrInternalServerError),
 	)
-
-	s := service.NewAuthService(mockTokenGenerator, mockTokenRepository, mockUserRepository)
 
 	tests := []struct {
 		name               string
@@ -168,41 +190,61 @@ func TestAuthService_RefreshToken(t *testing.T) {
 		expectedErr        error
 	}{
 		{
-			name:               "success",
-			token:              &domain.Token{},
-			expectedTokenGroup: &domain.TokenGroup{AccessToken: "token", RefreshToken: "token"},
-			expectedErr:        nil,
+			name: "success",
+			token: &domain.Token{
+				TokenType: domain.RefreshToken,
+			},
+			expectedTokenGroup: &domain.TokenGroup{
+				AccessToken:  "token",
+				RefreshToken: "token",
+			},
+			expectedErr: nil,
 		}, {
-			name:               "invalid token",
+			name:               "invalid token type",
 			token:              &domain.Token{},
+			expectedTokenGroup: nil,
+			expectedErr:        domain.ErrInvalidTokenType,
+		}, {
+			name: "error deleting token",
+			token: &domain.Token{
+				TokenType: domain.RefreshToken,
+			},
+			expectedTokenGroup: nil,
+			expectedErr:        domain.ErrInternalServerError,
+		}, {
+			name: "token is already used",
+			token: &domain.Token{
+				TokenType: domain.RefreshToken,
+			},
 			expectedTokenGroup: nil,
 			expectedErr:        domain.ErrInvalidToken,
 		}, {
-			name:               "error deleting token",
-			token:              &domain.Token{},
+			name: "error signing token",
+			token: &domain.Token{
+				TokenType: domain.RefreshToken,
+			},
 			expectedTokenGroup: nil,
 			expectedErr:        domain.ErrInternalServerError,
 		}, {
-			name:               "error signing token",
-			token:              &domain.Token{},
-			expectedTokenGroup: nil,
-			expectedErr:        domain.ErrInternalServerError,
-		}, {
-			name:               "error adding token",
-			token:              &domain.Token{},
+			name: "error adding token",
+			token: &domain.Token{
+				TokenType: domain.RefreshToken,
+			},
 			expectedTokenGroup: nil,
 			expectedErr:        domain.ErrInternalServerError,
 		},
 	}
 
+	s := service.NewAuthService(mockTokenGenerator, mockTokenRepository, mockUserRepository)
+
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			tokenGroup, serviceErr := s.RefreshSession(context.Background(), tt.token)
+			tokenGroup, err := s.RefreshSession(context.Background(), tt.token)
 
 			if tt.expectedErr == nil {
 				assert.Equal(t, tt.expectedTokenGroup, tokenGroup)
 			} else {
-				assert.ErrorIs(t, tt.expectedErr, serviceErr)
+				assert.ErrorIs(t, err, tt.expectedErr)
 			}
 		})
 	}
