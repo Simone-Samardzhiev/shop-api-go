@@ -263,7 +263,7 @@ func (r *UserRepository) UpdateUsername(ctx context.Context, id uuid.UUID, usern
 	result, err := r.db.ExecContext(
 		ctx,
 		`UPDATE users 
-		SET username = $1
+		SET username = $1, updated_at = now()
 		WHERE id = $2`,
 		username,
 		id,
@@ -296,7 +296,7 @@ func (r *UserRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email st
 	result, err := r.db.ExecContext(
 		ctx,
 		`UPDATE users
-		SET email = $1 
+		SET email = $1, updated_at = now() 
 		WHERE id = $2`,
 		email,
 		id,
