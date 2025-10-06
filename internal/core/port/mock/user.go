@@ -147,6 +147,20 @@ func (mr *MockUserRepositoryMockRecorder) SearchUserByUsername(ctx, username, li
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUserByUsername", reflect.TypeOf((*MockUserRepository)(nil).SearchUserByUsername), ctx, username, limit)
 }
 
+// UpdateEmail mocks base method.
+func (m *MockUserRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateEmail", ctx, id, email)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateEmail indicates an expected call of UpdateEmail.
+func (mr *MockUserRepositoryMockRecorder) UpdateEmail(ctx, id, email any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmail", reflect.TypeOf((*MockUserRepository)(nil).UpdateEmail), ctx, id, email)
+}
+
 // UpdateUsername mocks base method.
 func (m *MockUserRepository) UpdateUsername(ctx context.Context, id uuid.UUID, username string) error {
 	m.ctrl.T.Helper()
@@ -185,51 +199,6 @@ func (m *MockUserService) EXPECT() *MockUserServiceMockRecorder {
 	return m.recorder
 }
 
-// GetUserById mocks base method.
-func (m *MockUserService) GetUserById(ctx context.Context, token *domain.Token, id uuid.UUID) (*domain.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserById", ctx, token, id)
-	ret0, _ := ret[0].(*domain.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUserById indicates an expected call of GetUserById.
-func (mr *MockUserServiceMockRecorder) GetUserById(ctx, token, id any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserById", reflect.TypeOf((*MockUserService)(nil).GetUserById), ctx, token, id)
-}
-
-// GetUsersByOffestPagination mocks base method.
-func (m *MockUserService) GetUsersByOffestPagination(ctx context.Context, token *domain.Token, page, limit int) ([]domain.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUsersByOffestPagination", ctx, token, page, limit)
-	ret0, _ := ret[0].([]domain.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUsersByOffestPagination indicates an expected call of GetUsersByOffestPagination.
-func (mr *MockUserServiceMockRecorder) GetUsersByOffestPagination(ctx, token, page, limit any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByOffestPagination", reflect.TypeOf((*MockUserService)(nil).GetUsersByOffestPagination), ctx, token, page, limit)
-}
-
-// GetUsersByTimePagination mocks base method.
-func (m *MockUserService) GetUsersByTimePagination(ctx context.Context, token *domain.Token, after time.Time, limit int) ([]domain.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUsersByTimePagination", ctx, token, after, limit)
-	ret0, _ := ret[0].([]domain.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUsersByTimePagination indicates an expected call of GetUsersByTimePagination.
-func (mr *MockUserServiceMockRecorder) GetUsersByTimePagination(ctx, token, after, limit any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByTimePagination", reflect.TypeOf((*MockUserService)(nil).GetUsersByTimePagination), ctx, token, after, limit)
-}
-
 // Register mocks base method.
 func (m *MockUserService) Register(ctx context.Context, user *domain.User) error {
 	m.ctrl.T.Helper()
@@ -242,48 +211,4 @@ func (m *MockUserService) Register(ctx context.Context, user *domain.User) error
 func (mr *MockUserServiceMockRecorder) Register(ctx, user any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Register", reflect.TypeOf((*MockUserService)(nil).Register), ctx, user)
-}
-
-// SearchUserByEmail mocks base method.
-func (m *MockUserService) SearchUserByEmail(ctx context.Context, token *domain.Token, email string, limit int) ([]domain.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SearchUserByEmail", ctx, token, email, limit)
-	ret0, _ := ret[0].([]domain.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SearchUserByEmail indicates an expected call of SearchUserByEmail.
-func (mr *MockUserServiceMockRecorder) SearchUserByEmail(ctx, token, email, limit any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUserByEmail", reflect.TypeOf((*MockUserService)(nil).SearchUserByEmail), ctx, token, email, limit)
-}
-
-// SearchUserByUsername mocks base method.
-func (m *MockUserService) SearchUserByUsername(ctx context.Context, token *domain.Token, username string, limit int) ([]domain.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SearchUserByUsername", ctx, token, username, limit)
-	ret0, _ := ret[0].([]domain.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SearchUserByUsername indicates an expected call of SearchUserByUsername.
-func (mr *MockUserServiceMockRecorder) SearchUserByUsername(ctx, token, username, limit any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUserByUsername", reflect.TypeOf((*MockUserService)(nil).SearchUserByUsername), ctx, token, username, limit)
-}
-
-// UpdateUsername mocks base method.
-func (m *MockUserService) UpdateUsername(ctx context.Context, token *domain.Token, id uuid.UUID, username string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateUsername", ctx, token, id, username)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateUsername indicates an expected call of UpdateUsername.
-func (mr *MockUserServiceMockRecorder) UpdateUsername(ctx, token, id, username any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUsername", reflect.TypeOf((*MockUserService)(nil).UpdateUsername), ctx, token, id, username)
 }

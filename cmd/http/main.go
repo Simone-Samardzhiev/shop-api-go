@@ -54,7 +54,8 @@ func main() {
 	userService := service.NewUserService(userRepository)
 	userHandler := http.NewUserHandler(userService)
 
-	adminHandler := http.NewAdminHandler(userService)
+	adminService := service.NewAdminService(userRepository)
+	adminHandler := http.NewAdminHandler(adminService)
 
 	tokenRepository := repository.NewTokenRepository(db)
 	jwtTokenGenerator := jwt.NewTokenGenerator(container.JWT)

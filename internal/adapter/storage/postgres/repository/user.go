@@ -286,7 +286,38 @@ func (r *UserRepository) UpdateUsername(ctx context.Context, id uuid.UUID, usern
 	}
 
 	if rowsAffected == 0 {
+		return domain.ErrUserNotFound
+	}
+
+	return nil
+}
+
+func (r *UserRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email string) error {
+	result, err := r.db.ExecContext(
+		ctx,
+		`UPDATE users
+		SET email = $1 
+		WHERE id = $2`,
+		email,
+		id,
+	)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return domain.ErrEmailAlreadyInUse
+		}
+
+		zap.L().Error("postgres/UserRepository.UpdateEmail failed", zap.Error(err))
 		return domain.ErrInternalServerError
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		zap.L().Error("postgres/UserRepository.UpdateEmail failed", zap.Error(err))
+		return domain.ErrInternalServerError
+	}
+	if rowsAffected == 0 {
+		return domain.ErrUserNotFound
 	}
 
 	return nil

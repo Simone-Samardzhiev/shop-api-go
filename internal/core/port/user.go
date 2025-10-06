@@ -26,6 +26,8 @@ type UserRepository interface {
 	GetUserById(ctx context.Context, id uuid.UUID) (*domain.User, error)
 	// UpdateUsername updates the username of specific user by id.
 	UpdateUsername(ctx context.Context, id uuid.UUID, username string) error
+	// UpdateEmail updates the email of specific user by id.
+	UpdateEmail(ctx context.Context, id uuid.UUID, email string) error
 }
 
 // UserService is an interface for interacting with user-related business logic.

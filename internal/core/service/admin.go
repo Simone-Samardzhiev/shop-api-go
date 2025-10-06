@@ -106,3 +106,13 @@ func (s *AdminService) UpdateUsername(ctx context.Context, token *domain.Token, 
 
 	return s.userRepository.UpdateUsername(ctx, id, username)
 }
+
+func (s *AdminService) UpdateEmail(ctx context.Context, token *domain.Token, id uuid.UUID, email string) error {
+	if token.TokenType != domain.AccessToken {
+		return domain.ErrInvalidTokenType
+	}
+	if token.UserRole != domain.Admin {
+		return domain.ErrInvalidTokenRole
+	}
+	return s.userRepository.UpdateEmail(ctx, id, email)
+}

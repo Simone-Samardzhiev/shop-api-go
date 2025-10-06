@@ -255,3 +255,36 @@ func (h *AdminHandler) UpdateUsername(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
+
+// updateEmailRequest represent a request body to update email.
+type updateEmailRequest struct {
+	Email string    `json:"email" binding:"required,min_bytes=8,max_bytes=255"`
+	Id    uuid.UUID `json:"id" binding:"required"`
+}
+
+func (h *AdminHandler) UpdateEmail(c *gin.Context) {
+	token, ok := c.Get("token")
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+
+	domainToken, ok := token.(*domain.Token)
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+
+	var req updateEmailRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleBindingError(c, err)
+		return
+	}
+
+	err := h.adminService.UpdateEmail(c, domainToken, req.Id, req.Email)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.Status(http.StatusOK)
+}
