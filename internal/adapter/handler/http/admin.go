@@ -12,13 +12,13 @@ import (
 
 // AdminHandler represent HTTP handler for admin-related requests.
 type AdminHandler struct {
-	userService port.UserService
+	adminService port.AdminService
 }
 
 // NewAdminHandler creates a new AdminHandler instance.
-func NewAdminHandler(userService port.UserService) *AdminHandler {
+func NewAdminHandler(userService port.AdminService) *AdminHandler {
 	return &AdminHandler{
-		userService: userService,
+		adminService: userService,
 	}
 }
 
@@ -72,7 +72,7 @@ func (h *AdminHandler) GetUsersByOffsetPagination(c *gin.Context) {
 		return
 	}
 
-	users, err := h.userService.GetUsersByOffestPagination(c, domainToken, req.Page, req.Limit)
+	users, err := h.adminService.GetUsersByOffestPagination(c, domainToken, req.Page, req.Limit)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -105,7 +105,7 @@ func (h *AdminHandler) GetUsersByTimePagination(c *gin.Context) {
 		return
 	}
 
-	users, err := h.userService.GetUsersByTimePagination(c, domainToken, req.After, req.Limit)
+	users, err := h.adminService.GetUsersByTimePagination(c, domainToken, req.After, req.Limit)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -150,7 +150,7 @@ func (h *AdminHandler) SearchUserByUsername(c *gin.Context) {
 		handleBindingError(c, err)
 	}
 
-	users, err := h.userService.SearchUserByUsername(c, domainToken, req.Username, req.Limit)
+	users, err := h.adminService.SearchUserByUsername(c, domainToken, req.Username, req.Limit)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -183,7 +183,7 @@ func (h *AdminHandler) SearchUserByEmail(c *gin.Context) {
 		return
 	}
 
-	users, err := h.userService.SearchUserByEmail(c, domainToken, req.Email, req.Limit)
+	users, err := h.adminService.SearchUserByEmail(c, domainToken, req.Email, req.Limit)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -215,7 +215,7 @@ func (h *AdminHandler) GetUserById(c *gin.Context) {
 		handleBindingError(c, err)
 	}
 
-	user, err := h.userService.GetUserById(c, domainToken, req.Id)
+	user, err := h.adminService.GetUserById(c, domainToken, req.Id)
 	if err != nil {
 		handleError(c, err)
 		return
@@ -247,7 +247,7 @@ func (h *AdminHandler) UpdateUsername(c *gin.Context) {
 		return
 	}
 
-	err := h.userService.UpdateUsername(c, domainToken, req.Id, req.Username)
+	err := h.adminService.UpdateUsername(c, domainToken, req.Id, req.Username)
 	if err != nil {
 		handleError(c, err)
 		return
