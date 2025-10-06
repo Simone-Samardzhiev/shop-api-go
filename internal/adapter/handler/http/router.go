@@ -47,6 +47,7 @@ func NewRouter(
 		}
 
 		admin := v1.Group("/admin")
+		admin.Use(jwtMiddleware)
 		{
 			admin.GET("/pagination-by-offset", adminHandler.GetUsersByOffsetPagination)
 			admin.GET("/pagination-by-time", adminHandler.GetUsersByTimePagination)
