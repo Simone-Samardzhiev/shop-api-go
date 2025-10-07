@@ -132,6 +132,20 @@ func (mr *MockAdminServiceMockRecorder) UpdateEmail(ctx, token, id, email any) *
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmail", reflect.TypeOf((*MockAdminService)(nil).UpdateEmail), ctx, token, id, email)
 }
 
+// UpdatePassword mocks base method.
+func (m *MockAdminService) UpdatePassword(ctx context.Context, token *domain.Token, id uuid.UUID, password string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdatePassword", ctx, token, id, password)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdatePassword indicates an expected call of UpdatePassword.
+func (mr *MockAdminServiceMockRecorder) UpdatePassword(ctx, token, id, password any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePassword", reflect.TypeOf((*MockAdminService)(nil).UpdatePassword), ctx, token, id, password)
+}
+
 // UpdateUsername mocks base method.
 func (m *MockAdminService) UpdateUsername(ctx context.Context, token *domain.Token, id uuid.UUID, username string) error {
 	m.ctrl.T.Helper()

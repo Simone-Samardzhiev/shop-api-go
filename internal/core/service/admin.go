@@ -4,6 +4,7 @@ import (
 	"context"
 	"shop-api-go/internal/core/domain"
 	"shop-api-go/internal/core/port"
+	"shop-api-go/internal/core/util"
 	"time"
 
 	"github.com/google/uuid"
@@ -115,4 +116,20 @@ func (s *AdminService) UpdateEmail(ctx context.Context, token *domain.Token, id 
 		return domain.ErrInvalidTokenRole
 	}
 	return s.userRepository.UpdateEmail(ctx, id, email)
+}
+
+func (s *AdminService) UpdatePassword(ctx context.Context, token *domain.Token, id uuid.UUID, password string) error {
+	if token.TokenType != domain.AccessToken {
+		return domain.ErrInvalidTokenType
+	}
+	if token.UserRole != domain.Admin {
+		return domain.ErrInvalidTokenRole
+	}
+
+	hash, err := util.HashPassword(password)
+	if err != nil {
+		return err
+	}
+
+	return s.userRepository.UpdatePassword(ctx, id, string(hash))
 }

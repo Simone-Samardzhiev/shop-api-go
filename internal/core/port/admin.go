@@ -24,4 +24,6 @@ type AdminService interface {
 	UpdateUsername(ctx context.Context, token *domain.Token, id uuid.UUID, username string) error
 	// UpdateEmail updates the email of specific user by id.
 	UpdateEmail(ctx context.Context, token *domain.Token, id uuid.UUID, email string) error
+	// UpdatePassword updates the password of a specific user by id.
+	UpdatePassword(ctx context.Context, token *domain.Token, id uuid.UUID, password string) error
 }

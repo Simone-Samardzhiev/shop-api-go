@@ -288,3 +288,35 @@ func (h *AdminHandler) UpdateEmail(c *gin.Context) {
 	}
 	c.Status(http.StatusOK)
 }
+
+// updatePasswordRequest represent a request body to update password.
+type updatePasswordRequest struct {
+	Password string    `json:"password" binding:"required,password"`
+	Id       uuid.UUID `json:"id" binding:"required"`
+}
+
+func (h *AdminHandler) UpdatePassword(c *gin.Context) {
+	token, ok := c.Get("token")
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+	domainToken, ok := token.(*domain.Token)
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+
+	var req updatePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleBindingError(c, err)
+		return
+	}
+
+	err := h.adminService.UpdatePassword(c, domainToken, req.Id, req.Password)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.Status(http.StatusOK)
+}

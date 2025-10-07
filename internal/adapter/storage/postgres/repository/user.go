@@ -322,3 +322,34 @@ func (r *UserRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email st
 
 	return nil
 }
+
+func (r *UserRepository) UpdatePassword(ctx context.Context, id uuid.UUID, password string) error {
+	result, err := r.db.ExecContext(
+		ctx,
+		`UPDATE users
+		SET password = $1, updated_at = now() 
+		WHERE id = $2`,
+		password,
+		id,
+	)
+	if err != nil {
+		var pqErr *pq.Error
+		if errors.As(err, &pqErr) {
+			return domain.ErrEmailAlreadyInUse
+		}
+
+		zap.L().Error("postgres/UserRepository.UpdateEmail failed", zap.Error(err))
+		return domain.ErrInternalServerError
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		zap.L().Error("postgres/UserRepository.UpdateEmail failed", zap.Error(err))
+		return domain.ErrInternalServerError
+	}
+	if rowsAffected == 0 {
+		return domain.ErrUserNotFound
+	}
+
+	return nil
+}

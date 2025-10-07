@@ -28,6 +28,8 @@ type UserRepository interface {
 	UpdateUsername(ctx context.Context, id uuid.UUID, username string) error
 	// UpdateEmail updates the email of specific user by id.
 	UpdateEmail(ctx context.Context, id uuid.UUID, email string) error
+	// UpdatePassword updates the password of a specific user by id.
+	UpdatePassword(ctx context.Context, id uuid.UUID, password string) error
 }
 
 // UserService is an interface for interacting with user-related business logic.

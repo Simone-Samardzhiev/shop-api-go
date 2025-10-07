@@ -56,6 +56,7 @@ func NewRouter(
 			admin.GET("/by-id", adminHandler.GetUserById)
 			admin.PUT("/update/username", adminHandler.UpdateUsername)
 			admin.PUT("/update/email", adminHandler.UpdateEmail)
+			admin.PUT("/update/password", adminHandler.UpdatePassword)
 		}
 
 		auth := v1.Group("/auth")
