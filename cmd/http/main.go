@@ -11,7 +11,7 @@ import (
 	"shop-api-go/internal/adapter/storage/postgres"
 	"shop-api-go/internal/adapter/storage/postgres/repository"
 	"shop-api-go/internal/core/service"
-	"shop-api-go/internal/core/util"
+	"shop-api-go/internal/core/tasks"
 	"time"
 
 	_ "github.com/lib/pq"
@@ -67,7 +67,7 @@ func main() {
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	util.StartDeleteExpiredTokensTask(ctx, tokenRepository, time.Hour)
+	tasks.StartDeleteExpiredTokensTask(ctx, tokenRepository, time.Hour)
 
 	router := http.NewRouter(container.App, jwtTokenGenerator, userHandler, adminHandler, authHandler)
 	err = router.Start()
