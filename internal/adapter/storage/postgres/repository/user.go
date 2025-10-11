@@ -77,7 +77,7 @@ func (r *UserRepository) GetUserByUsername(ctx context.Context, username string)
 	err := row.Scan(&user.Id, &user.Username, &user.Email, &user.Password, &user.Role)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, domain.ErrWrongCredentials
+			return nil, domain.ErrUserNotFound
 		} else {
 			zap.L().Error("postgres/UserRepository.GetUserByUsername failed",
 				zap.String("username", username),

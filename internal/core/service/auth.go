@@ -27,6 +27,12 @@ func NewAuthService(tokenGenerator port.TokenGenerator, tokenRepository port.Tok
 
 func (as *AuthService) Login(ctx context.Context, user *domain.User) (*domain.TokenGroup, error) {
 	fetchedUser, err := as.userRepository.GetUserByUsername(ctx, user.Username)
+	fetchedUser, err := s.userRepository.GetUserByUsername(ctx, user.Username)
+	if errors.Is(err, domain.ErrUserNotFound) {
+		return nil, domain.ErrWrongCredentials
+	} else if err != nil {
+		return nil, err
+	}
 	if err != nil {
 		return nil, err
 	}
