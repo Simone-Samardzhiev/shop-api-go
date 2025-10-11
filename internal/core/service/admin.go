@@ -4,7 +4,6 @@ import (
 	"context"
 	"shop-api-go/internal/core/domain"
 	"shop-api-go/internal/core/port"
-	"shop-api-go/internal/core/util"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,12 +12,14 @@ import (
 // AdminService implements port.AdminService interface and provides access to admin-related business logic.
 type AdminService struct {
 	userRepository port.UserRepository
+	passwordHasher port.PasswordHasher
 }
 
 // NewAdminService creates a new AdminService instance.
-func NewAdminService(userRepository port.UserRepository) *AdminService {
+func NewAdminService(userRepository port.UserRepository, passwordHasher port.PasswordHasher) *AdminService {
 	return &AdminService{
 		userRepository: userRepository,
+		passwordHasher: passwordHasher,
 	}
 }
 
@@ -126,10 +127,10 @@ func (s *AdminService) UpdatePassword(ctx context.Context, token *domain.Token, 
 		return domain.ErrInvalidTokenRole
 	}
 
-	hash, err := util.HashPassword(password)
+	hash, err := s.passwordHasher.Hash(password)
 	if err != nil {
 		return err
 	}
 
-	return s.userRepository.UpdatePassword(ctx, id, string(hash))
+	return s.userRepository.UpdatePassword(ctx, id, hash)
 }

@@ -62,6 +62,11 @@ var errMap = map[error]errorResponse{
 		messages:   []string{"Token is malformed."},
 		statusCode: http.StatusUnauthorized,
 	},
+	domain.ErrTokenNotFound: {
+		code:       "TOKEN_NOT_FOUND",
+		messages:   []string{"Token not found."},
+		statusCode: http.StatusNotFound,
+	},
 }
 
 // handleError parses the error and return a proper message to the client.

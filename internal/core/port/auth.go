@@ -15,12 +15,20 @@ type TokenGenerator interface {
 	ParseToken(token string) (*domain.Token, error)
 }
 
+// PasswordHasher is an interface for hashing and validating passwords.
+type PasswordHasher interface {
+	// Hash returns hashed version of the password.
+	Hash(password string) (string, error)
+	// Compare validates that the password and the hash match.
+	Compare(password, hash string) error
+}
+
 // TokenRepository is an interface for interacting with token-related data.
 type TokenRepository interface {
 	// AddToken insets a new token into the database.
 	AddToken(ctx context.Context, token *domain.Token) error
-	// DeleteToken deletes a token with specified id and returns true if the token was deleted.
-	DeleteToken(ctx context.Context, id uuid.UUID) (bool, error)
+	// DeleteToken deletes a token with specified id.
+	DeleteToken(ctx context.Context, id uuid.UUID) error
 	// DeleteExpiredTokens deletes all tokens that have expired.
 	DeleteExpiredTokens() error
 }

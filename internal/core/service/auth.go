@@ -2,9 +2,9 @@ package service
 
 import (
 	"context"
+	"errors"
 	"shop-api-go/internal/core/domain"
 	"shop-api-go/internal/core/port"
-	"shop-api-go/internal/core/util"
 
 	"github.com/google/uuid"
 )
@@ -12,33 +12,32 @@ import (
 // AuthService implements port.AuthService interface and provides access to admin-related business logic.
 type AuthService struct {
 	tokenGenerator  port.TokenGenerator
+	passwordHasher  port.PasswordHasher
 	tokenRepository port.TokenRepository
 	userRepository  port.UserRepository
 }
 
 // NewAuthService creates a new AuthService instance.
-func NewAuthService(tokenGenerator port.TokenGenerator, tokenRepository port.TokenRepository, userRepository port.UserRepository) *AuthService {
+func NewAuthService(tokenGenerator port.TokenGenerator, passwordHasher port.PasswordHasher, tokenRepository port.TokenRepository, userRepository port.UserRepository) *AuthService {
 	return &AuthService{
 		tokenGenerator:  tokenGenerator,
+		passwordHasher:  passwordHasher,
 		tokenRepository: tokenRepository,
 		userRepository:  userRepository,
 	}
 }
 
-func (as *AuthService) Login(ctx context.Context, user *domain.User) (*domain.TokenGroup, error) {
-	fetchedUser, err := as.userRepository.GetUserByUsername(ctx, user.Username)
+func (s *AuthService) Login(ctx context.Context, user *domain.User) (*domain.TokenGroup, error) {
 	fetchedUser, err := s.userRepository.GetUserByUsername(ctx, user.Username)
 	if errors.Is(err, domain.ErrUserNotFound) {
 		return nil, domain.ErrWrongCredentials
 	} else if err != nil {
 		return nil, err
 	}
+
+	err = s.passwordHasher.Compare(user.Password, fetchedUser.Password)
 	if err != nil {
 		return nil, err
-	}
-
-	if !util.ComparePassword(user.Password, fetchedUser.Password) {
-		return nil, domain.ErrWrongCredentials
 	}
 
 	accessToken := domain.Token{
@@ -48,7 +47,7 @@ func (as *AuthService) Login(ctx context.Context, user *domain.User) (*domain.To
 		UserRole:  fetchedUser.Role,
 	}
 
-	signedAccessToken, err := as.tokenGenerator.SignToken(&accessToken)
+	signedAccessToken, err := s.tokenGenerator.SignToken(&accessToken)
 	if err != nil {
 		return nil, err
 	}
@@ -59,11 +58,11 @@ func (as *AuthService) Login(ctx context.Context, user *domain.User) (*domain.To
 		TokenType: domain.RefreshToken,
 		UserRole:  fetchedUser.Role,
 	}
-	signedRefreshToken, err := as.tokenGenerator.SignToken(&refreshToken)
+	signedRefreshToken, err := s.tokenGenerator.SignToken(&refreshToken)
 	if err != nil {
 		return nil, err
 	}
-	err = as.tokenRepository.AddToken(ctx, &refreshToken)
+	err = s.tokenRepository.AddToken(ctx, &refreshToken)
 	if err != nil {
 		return nil, err
 	}
@@ -74,17 +73,16 @@ func (as *AuthService) Login(ctx context.Context, user *domain.User) (*domain.To
 	}, nil
 }
 
-func (as *AuthService) RefreshSession(ctx context.Context, token *domain.Token) (*domain.TokenGroup, error) {
+func (s *AuthService) RefreshSession(ctx context.Context, token *domain.Token) (*domain.TokenGroup, error) {
 	if token.TokenType != domain.RefreshToken {
 		return nil, domain.ErrInvalidTokenType
 	}
 
-	result, err := as.tokenRepository.DeleteToken(ctx, token.Id)
-	if err != nil {
-		return nil, err
-	}
-	if !result {
+	err := s.tokenRepository.DeleteToken(ctx, token.Id)
+	if errors.Is(err, domain.ErrTokenNotFound) {
 		return nil, domain.ErrInvalidToken
+	} else if err != nil {
+		return nil, err
 	}
 
 	accessToken := domain.Token{
@@ -93,7 +91,7 @@ func (as *AuthService) RefreshSession(ctx context.Context, token *domain.Token) 
 		TokenType: domain.AccessToken,
 		UserRole:  token.UserRole,
 	}
-	signedAccessToken, err := as.tokenGenerator.SignToken(&accessToken)
+	signedAccessToken, err := s.tokenGenerator.SignToken(&accessToken)
 	if err != nil {
 		return nil, err
 	}
@@ -104,12 +102,12 @@ func (as *AuthService) RefreshSession(ctx context.Context, token *domain.Token) 
 		TokenType: domain.RefreshToken,
 		UserRole:  token.UserRole,
 	}
-	signedRefreshToken, err := as.tokenGenerator.SignToken(token)
+	signedRefreshToken, err := s.tokenGenerator.SignToken(token)
 	if err != nil {
 		return nil, err
 	}
 
-	err = as.tokenRepository.AddToken(ctx, token)
+	err = s.tokenRepository.AddToken(ctx, token)
 	if err != nil {
 		return nil, err
 	}

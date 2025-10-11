@@ -8,69 +8,91 @@ import (
 	"shop-api-go/internal/core/service"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	"go.uber.org/mock/gomock"
 )
 
 func TestUserService_Register(t *testing.T) {
 	ctrl := gomock.NewController(t)
 
-	mockUserRepository := mock.NewMockUserRepository(ctrl)
-	gomock.InOrder(
-		mockUserRepository.EXPECT().
-			AddUser(gomock.Any(), gomock.AssignableToTypeOf(&domain.User{})).
-			DoAndReturn(func(ctx context.Context, user *domain.User) error {
-				return nil
-			}),
-		mockUserRepository.EXPECT().
-			AddUser(gomock.Any(), gomock.AssignableToTypeOf(&domain.User{})).
-			DoAndReturn(func(ctx context.Context, user *domain.User) error {
-				if user.Username != "duplicate" {
-					return errors.New("username is not duplicate")
-				}
-				return domain.ErrUsernameAlreadyInUse
-			}),
-		mockUserRepository.EXPECT().
-			AddUser(gomock.Any(), gomock.AssignableToTypeOf(&domain.User{})).
-			DoAndReturn(func(ctx context.Context, user *domain.User) error {
-				if user.Email != "duplicate" {
-					return errors.New("email is not duplicate")
-				}
-				return domain.ErrEmailAlreadyInUse
-			}),
-	)
-
-	s := service.NewUserService(mockUserRepository)
-
 	tests := []struct {
-		name        string
-		user        *domain.User
-		expectedErr error
+		name          string
+		user          *domain.User
+		expectedError error
+		mockSetup     func(userRepository *mock.MockUserRepository, passwordHasher *mock.MockPasswordHasher)
 	}{
 		{
-			name:        "success",
-			user:        &domain.User{},
-			expectedErr: nil,
-		},
-		{
-			name: "duplicate username",
+			name: "success",
 			user: &domain.User{
-				Username: "duplicate",
+				Password: "password",
 			},
-			expectedErr: domain.ErrUsernameAlreadyInUse,
+			expectedError: nil,
+			mockSetup: func(userRepository *mock.MockUserRepository, passwordHasher *mock.MockPasswordHasher) {
+				gomock.InOrder(
+					passwordHasher.EXPECT().
+						Hash("password").
+						Return("hashedPassword", nil),
+
+					userRepository.EXPECT().
+						AddUser(
+							gomock.AssignableToTypeOf(context.Background()),
+							gomock.AssignableToTypeOf(&domain.User{}),
+						).
+						DoAndReturn(func(ctx context.Context, user *domain.User) error {
+							if user.Password != "hashedPassword" {
+								return errors.New("wrong password")
+							}
+							return nil
+						}),
+				)
+			},
 		}, {
-			name: "duplicate email",
+			name: "error hashing password",
 			user: &domain.User{
-				Email: "duplicate",
+				Password: "password",
 			},
-			expectedErr: domain.ErrEmailAlreadyInUse,
+			expectedError: domain.ErrInternalServerError,
+			mockSetup: func(userRepository *mock.MockUserRepository, passwordHasher *mock.MockPasswordHasher) {
+				passwordHasher.EXPECT().
+					Hash("password").
+					Return("", domain.ErrInternalServerError)
+			},
+		}, {
+			name: "error adding user",
+			user: &domain.User{
+				Password: "password",
+			},
+			expectedError: domain.ErrInternalServerError,
+			mockSetup: func(userRepository *mock.MockUserRepository, passwordHasher *mock.MockPasswordHasher) {
+				gomock.InOrder(
+					passwordHasher.EXPECT().
+						Hash("password").
+						Return("hashedPassword", nil),
+					userRepository.EXPECT().
+						AddUser(
+							gomock.AssignableToTypeOf(context.Background()),
+							gomock.AssignableToTypeOf(&domain.User{}),
+						).
+						DoAndReturn(func(ctx context.Context, user *domain.User) error {
+							if user.Password != "hashedPassword" {
+								return errors.New("wrong password")
+							}
+							return domain.ErrInternalServerError
+						}),
+				)
+
+			},
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			err := s.Register(context.Background(), tt.user)
-			assert.Equal(t, tt.expectedErr, err)
+			mockUserRepository := mock.NewMockUserRepository(ctrl)
+			mockPasswordHasher := mock.NewMockPasswordHasher(ctrl)
+			tt.mockSetup(mockUserRepository, mockPasswordHasher)
+
+			err := service.NewUserService(mockUserRepository, mockPasswordHasher).Register(context.Background(), tt.user)
+			require.ErrorIs(t, err, tt.expectedError)
 		})
 	}
 }

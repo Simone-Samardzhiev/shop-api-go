@@ -23,4 +23,6 @@ var (
 	ErrInvalidTokenRole = errors.New("invalid token role")
 	// ErrMalformedToken is an error for when token data is invalid.
 	ErrMalformedToken = errors.New("invalid token subject")
+	// ErrTokenNotFound  is an error for when token is expired or already user.
+	ErrTokenNotFound = errors.New("token expired or already user")
 )

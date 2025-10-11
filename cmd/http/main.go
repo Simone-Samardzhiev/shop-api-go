@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"log"
+	"shop-api-go/internal/adapter/auth/bcrypt"
 	"shop-api-go/internal/adapter/auth/jwt"
 	"shop-api-go/internal/adapter/config"
 	"shop-api-go/internal/adapter/handler/http"
@@ -50,16 +51,18 @@ func main() {
 		),
 	)
 
+	passwordHasher := &bcrypt.PasswordHasher{}
+
 	userRepository := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepository)
+	userService := service.NewUserService(userRepository, passwordHasher)
 	userHandler := http.NewUserHandler(userService)
 
-	adminService := service.NewAdminService(userRepository)
+	adminService := service.NewAdminService(userRepository, passwordHasher)
 	adminHandler := http.NewAdminHandler(adminService)
 
 	tokenRepository := repository.NewTokenRepository(db)
 	jwtTokenGenerator := jwt.NewTokenGenerator(container.JWT)
-	authService := service.NewAuthService(jwtTokenGenerator, tokenRepository, userRepository)
+	authService := service.NewAuthService(jwtTokenGenerator, passwordHasher, tokenRepository, userRepository)
 	authHandler := http.NewAuthHandler(authService)
 
 	ctx, cancel := context.WithCancel(context.Background())

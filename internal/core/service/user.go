@@ -4,7 +4,6 @@ import (
 	"context"
 	"shop-api-go/internal/core/domain"
 	"shop-api-go/internal/core/port"
-	"shop-api-go/internal/core/util"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,11 +12,15 @@ import (
 // UserService implements port.UserService interface and provides access to user-related business logic.
 type UserService struct {
 	userRepository port.UserRepository
+	passwordHasher port.PasswordHasher
 }
 
 // NewUserService creates a new UserService instance.
-func NewUserService(ur port.UserRepository) *UserService {
-	return &UserService{userRepository: ur}
+func NewUserService(userRepository port.UserRepository, passwordHasher port.PasswordHasher) *UserService {
+	return &UserService{
+		userRepository: userRepository,
+		passwordHasher: passwordHasher,
+	}
 }
 
 func (s *UserService) Register(ctx context.Context, user *domain.User) error {
@@ -26,10 +29,10 @@ func (s *UserService) Register(ctx context.Context, user *domain.User) error {
 	user.UpdatedAt = now
 
 	user.Id = uuid.New()
-	hash, err := util.HashPassword(user.Password)
+	hash, err := s.passwordHasher.Hash(user.Password)
 	if err != nil {
 		return domain.ErrInternalServerError
 	}
-	user.Password = string(hash)
+	user.Password = hash
 	return s.userRepository.AddUser(ctx, user)
 }

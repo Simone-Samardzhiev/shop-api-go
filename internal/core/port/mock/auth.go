@@ -72,6 +72,59 @@ func (mr *MockTokenGeneratorMockRecorder) SignToken(token any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignToken", reflect.TypeOf((*MockTokenGenerator)(nil).SignToken), token)
 }
 
+// MockPasswordHasher is a mock of PasswordHasher interface.
+type MockPasswordHasher struct {
+	ctrl     *gomock.Controller
+	recorder *MockPasswordHasherMockRecorder
+	isgomock struct{}
+}
+
+// MockPasswordHasherMockRecorder is the mock recorder for MockPasswordHasher.
+type MockPasswordHasherMockRecorder struct {
+	mock *MockPasswordHasher
+}
+
+// NewMockPasswordHasher creates a new mock instance.
+func NewMockPasswordHasher(ctrl *gomock.Controller) *MockPasswordHasher {
+	mock := &MockPasswordHasher{ctrl: ctrl}
+	mock.recorder = &MockPasswordHasherMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockPasswordHasher) EXPECT() *MockPasswordHasherMockRecorder {
+	return m.recorder
+}
+
+// Compare mocks base method.
+func (m *MockPasswordHasher) Compare(password, hash string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Compare", password, hash)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// Compare indicates an expected call of Compare.
+func (mr *MockPasswordHasherMockRecorder) Compare(password, hash any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Compare", reflect.TypeOf((*MockPasswordHasher)(nil).Compare), password, hash)
+}
+
+// Hash mocks base method.
+func (m *MockPasswordHasher) Hash(password string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Hash", password)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// Hash indicates an expected call of Hash.
+func (mr *MockPasswordHasherMockRecorder) Hash(password any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Hash", reflect.TypeOf((*MockPasswordHasher)(nil).Hash), password)
+}
+
 // MockTokenRepository is a mock of TokenRepository interface.
 type MockTokenRepository struct {
 	ctrl     *gomock.Controller
@@ -125,12 +178,11 @@ func (mr *MockTokenRepositoryMockRecorder) DeleteExpiredTokens() *gomock.Call {
 }
 
 // DeleteToken mocks base method.
-func (m *MockTokenRepository) DeleteToken(ctx context.Context, id uuid.UUID) (bool, error) {
+func (m *MockTokenRepository) DeleteToken(ctx context.Context, id uuid.UUID) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DeleteToken", ctx, id)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret0, _ := ret[0].(error)
+	return ret0
 }
 
 // DeleteToken indicates an expected call of DeleteToken.

@@ -44,22 +44,26 @@ func (t *TokenRepository) AddToken(ctx context.Context, token *domain.Token) err
 	return nil
 }
 
-func (t *TokenRepository) DeleteToken(ctx context.Context, id uuid.UUID) (bool, error) {
+func (t *TokenRepository) DeleteToken(ctx context.Context, id uuid.UUID) error {
 	result, err := t.db.ExecContext(ctx, "DELETE FROM tokens WHERE id = $1", id)
 	if err != nil {
 		zap.L().Error("postgres/TokenRepository.DeleteToken failed",
 			zap.String("id", id.String()),
 			zap.Error(err),
 		)
-		return false, domain.ErrInternalServerError
+		return domain.ErrInternalServerError
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
 		zap.L().Error("postgres/TokenRepository.DeleteToken failed", zap.Error(err))
-		return false, domain.ErrInternalServerError
+		return domain.ErrInternalServerError
 	}
-	return rowsAffected > 0, nil
+
+	if rowsAffected == 0 {
+		return domain.ErrTokenNotFound
+	}
+	return nil
 }
 
 func (t *TokenRepository) DeleteExpiredTokens() error {
