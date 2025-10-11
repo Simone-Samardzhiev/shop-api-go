@@ -1,6 +1,7 @@
 package http
 
 import (
+	"shop-api-go/internal/core/domain"
 	"strconv"
 	"unicode"
 
@@ -83,4 +84,18 @@ func isValidPassword(password string) bool {
 func validatePassword(fl validator.FieldLevel) bool {
 	password := fl.Field().String()
 	return isValidPassword(password)
+}
+
+// mapUserRoles is a map used to map valid user roles.
+var mapUserRoles = map[domain.UserRole]bool{
+	domain.Admin:     true,
+	domain.Client:    true,
+	domain.Delivery:  true,
+	domain.Warehouse: true,
+}
+
+// validateUserRole is a function that implement validator.FieldLevel interface
+// and validates that a user role is valid.
+func validateUserRole(fl validator.FieldLevel) bool {
+	return mapUserRoles[domain.UserRole(fl.Field().String())]
 }

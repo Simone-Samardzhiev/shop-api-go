@@ -134,3 +134,14 @@ func (s *AdminService) UpdatePassword(ctx context.Context, token *domain.Token, 
 
 	return s.userRepository.UpdatePassword(ctx, id, hash)
 }
+
+func (s *AdminService) UpdateRole(ctx context.Context, token *domain.Token, id uuid.UUID, role domain.UserRole) error {
+	if token.TokenType != domain.AccessToken {
+		return domain.ErrInvalidTokenType
+	}
+	if token.UserRole != domain.Admin {
+		return domain.ErrInvalidTokenRole
+	}
+
+	return s.userRepository.UpdateRole(ctx, id, role)
+}

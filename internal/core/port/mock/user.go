@@ -175,6 +175,20 @@ func (mr *MockUserRepositoryMockRecorder) UpdatePassword(ctx, id, password any) 
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePassword", reflect.TypeOf((*MockUserRepository)(nil).UpdatePassword), ctx, id, password)
 }
 
+// UpdateRole mocks base method.
+func (m *MockUserRepository) UpdateRole(ctx context.Context, id uuid.UUID, role domain.UserRole) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateRole", ctx, id, role)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateRole indicates an expected call of UpdateRole.
+func (mr *MockUserRepositoryMockRecorder) UpdateRole(ctx, id, role any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRole", reflect.TypeOf((*MockUserRepository)(nil).UpdateRole), ctx, id, role)
+}
+
 // UpdateUsername mocks base method.
 func (m *MockUserRepository) UpdateUsername(ctx context.Context, id uuid.UUID, username string) error {
 	m.ctrl.T.Helper()

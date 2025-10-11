@@ -25,6 +25,7 @@ func NewRouter(
 		_ = v.RegisterValidation("password", validatePassword)
 		_ = v.RegisterValidation("min_bytes", validateMinBytesLength)
 		_ = v.RegisterValidation("max_bytes", validateMaxBytesLength)
+		_ = v.RegisterValidation("user_role", validateUserRole)
 	}
 
 	switch appConfig.Environment {
@@ -57,6 +58,7 @@ func NewRouter(
 			admin.PUT("/update/username", adminHandler.UpdateUsername)
 			admin.PUT("/update/email", adminHandler.UpdateEmail)
 			admin.PUT("/update/password", adminHandler.UpdatePassword)
+			admin.PUT("/update/role", adminHandler.UpdateRole)
 		}
 
 		auth := v1.Group("/auth")

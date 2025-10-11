@@ -320,3 +320,34 @@ func (h *AdminHandler) UpdatePassword(c *gin.Context) {
 	}
 	c.Status(http.StatusOK)
 }
+
+type updateRoleRequest struct {
+	Role domain.UserRole `json:"role" binding:"required,user_role"`
+	Id   uuid.UUID       `json:"id" binding:"required"`
+}
+
+func (h *AdminHandler) UpdateRole(c *gin.Context) {
+	token, ok := c.Get("token")
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+	domainToken, ok := token.(*domain.Token)
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+
+	var req updateRoleRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleBindingError(c, err)
+		return
+	}
+
+	err := h.adminService.UpdateRole(c, domainToken, req.Id, req.Role)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+	c.Status(http.StatusOK)
+}

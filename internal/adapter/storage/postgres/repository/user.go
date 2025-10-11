@@ -353,3 +353,29 @@ func (r *UserRepository) UpdatePassword(ctx context.Context, id uuid.UUID, passw
 
 	return nil
 }
+
+func (r *UserRepository) UpdateRole(ctx context.Context, id uuid.UUID, role domain.UserRole) error {
+	result, err := r.db.ExecContext(
+		ctx,
+		`UPDATE users SET role = $1, updated_at = now()
+		WHERE id = $2`,
+		role,
+		id,
+	)
+
+	if err != nil {
+		zap.L().Error("postgres/UserRepository.UpdateRole failed", zap.Error(err))
+		return domain.ErrInternalServerError
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		zap.L().Error("postgres/UserRepository.UpdateRole failed", zap.Error(err))
+		return domain.ErrInternalServerError
+	}
+
+	if rowsAffected == 0 {
+		return domain.ErrUserNotFound
+	}
+	return nil
+}

@@ -112,6 +112,8 @@ func handleBindingError(c *gin.Context, err error) {
 				messages = append(messages, fmt.Sprintf("%s length must be more than %s", e.Field(), e.Param()))
 			case "max_bytes":
 				messages = append(messages, fmt.Sprintf("%s length must be less than %s", e.Field(), e.Param()))
+			case "user_role":
+				messages = append(messages, fmt.Sprintf("%s is not a valid user role", e.Field()))
 			case "min":
 				messages = append(messages, fmt.Sprintf("%s must be more than %s", e.Field(), e.Param()))
 			case "max":

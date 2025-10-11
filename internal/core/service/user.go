@@ -4,7 +4,6 @@ import (
 	"context"
 	"shop-api-go/internal/core/domain"
 	"shop-api-go/internal/core/port"
-	"time"
 
 	"github.com/google/uuid"
 )
