@@ -24,10 +24,6 @@ func NewUserService(userRepository port.UserRepository, passwordHasher port.Pass
 }
 
 func (s *UserService) Register(ctx context.Context, user *domain.User) error {
-	now := time.Now()
-	user.CreatedAt = now
-	user.UpdatedAt = now
-
 	user.Id = uuid.New()
 	hash, err := s.passwordHasher.Hash(user.Password)
 	if err != nil {
