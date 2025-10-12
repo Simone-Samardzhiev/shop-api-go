@@ -1,0 +1,37 @@
+version: '3'
+
+vars:
+  MIGRATIONS_PATH: "./internal/adapter/storage/postgres/migrations"
+
+dotenv:
+  - .env
+
+tasks:
+  migrate-up:
+    desc: "Applies all pending migrations."
+    cmds:
+      - migrate -path {{.MIGRATIONS_PATH}} -database "{{.DATABASE_URL}}" up
+
+  migrate-down:
+    desc: "Reverts the last applied migration."
+    cmds:
+      - migrate -path {{.MIGRATIONS_PATH}} -database "{{.DATABASE_URL}}" down 1
+
+  migrate-down-all:
+    desc: "Reverts all migrations."
+    cmds:
+      - migrate -path {{.MIGRATIONS_PATH}} -database "{{.DATABASE_URL}}" down
+
+  migrate-create:
+    desc: "Creates a new up/down migration file."
+    vars:
+      MIGRATION_NAME: '{{.NAME | default "new_migration"}}'
+    cmds:
+      - migrate create -ext sql -dir {{.MIGRATIONS_PATH}} -seq {{.MIGRATION_NAME}}
+
+  migrate-force:
+    desc: "Forces the database version to a specific V, ignoring dirty state."
+    vars:
+      TARGET_VERSION: '{{.VERSION | default "-1"}}'
+    cmds:
+      - migrate -path {{.MIGRATIONS_PATH}} -database "{{.DATABASE_URL}}" force {{.TARGET_VERSION}}
