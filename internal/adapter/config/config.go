@@ -80,9 +80,7 @@ const (
 // New creates a new Container instance.
 func New() (*Container, error) {
 	err := godotenv.Load()
-	if err != nil {
-		return nil, err
-	}
+	log.Printf("Error loading .env file: %v", err)
 
 	environment := Environment(getEnv("ENVIRONMENT", string(Development)))
 	if environment != Production && environment != Development {

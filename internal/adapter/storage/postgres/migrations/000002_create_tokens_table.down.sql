@@ -1,2 +1,2 @@
+DROP TABLE IF EXISTS tokens;
 DROP TYPE IF EXISTS token_type_enum;
-DROP TABLE IF EXISTS users;
