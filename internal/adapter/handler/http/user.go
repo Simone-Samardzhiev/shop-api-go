@@ -105,3 +105,33 @@ func (h *UserHandler) ChangeEmail(c *gin.Context) {
 
 	c.Status(http.StatusCreated)
 }
+
+// changePasswordRequest represents a request body for changing password.
+type changePasswordRequest struct {
+	Username    string `json:"username"`
+	Password    string `json:"password"`
+	NewPassword string `json:"newPassword" binding:"required,password"`
+}
+
+func (h *UserHandler) ChangePassword(c *gin.Context) {
+	var req changePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleBindingError(c, err)
+		return
+	}
+
+	err := h.userService.ChangePassword(
+		c,
+		&domain.User{
+			Username: req.Username,
+			Password: req.Password,
+		},
+		req.NewPassword,
+	)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+}

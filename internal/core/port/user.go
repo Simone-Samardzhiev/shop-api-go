@@ -42,4 +42,6 @@ type UserService interface {
 	ChangeUsername(ctx context.Context, user *domain.User, username string) error
 	// ChangeEmail changes the email of a user by validating the credentials.
 	ChangeEmail(ctx context.Context, user *domain.User, email string) error
+	// ChangePassword changes the email of a user by validating the credentials.
+	ChangePassword(ctx context.Context, user *domain.User, password string) error
 }

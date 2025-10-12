@@ -519,3 +519,238 @@ func TestUserService_ChangeEmail(t *testing.T) {
 		})
 	}
 }
+
+func TestUserService_ChangePassword(t *testing.T) {
+	tests := []struct {
+		name          string
+		user          *domain.User
+		newPassword   string
+		expectedError error
+		mockSetup     func(
+			mockUserRepository *mock.MockUserRepository,
+			mockPasswordHasher *mock.MockPasswordHasher,
+			mockTokenRepository *mock.MockTokenRepository,
+		)
+	}{
+		{
+			name: "success",
+			user: &domain.User{
+				Username: "username",
+				Password: "oldPassword",
+			},
+			newPassword:   "newPassword",
+			expectedError: nil,
+			mockSetup: func(
+				mockUserRepository *mock.MockUserRepository,
+				mockPasswordHasher *mock.MockPasswordHasher,
+				mockTokenRepository *mock.MockTokenRepository,
+			) {
+				fetchedUserID := uuid.New()
+				gomock.InOrder(
+					mockUserRepository.
+						EXPECT().
+						GetUserByUsername(gomock.Any(), "username").
+						Return(&domain.User{
+							Id:       fetchedUserID,
+							Username: "username",
+							Password: "hashedOldPassword",
+						}, nil),
+					mockPasswordHasher.
+						EXPECT().
+						Compare("oldPassword", "hashedOldPassword").
+						Return(nil),
+					mockPasswordHasher.
+						EXPECT().
+						Hash("newPassword").
+						Return("hashedNewPassword", nil),
+					mockUserRepository.
+						EXPECT().
+						UpdatePassword(gomock.Any(), fetchedUserID, "hashedNewPassword").
+						Return(nil),
+					mockTokenRepository.
+						EXPECT().
+						DeleteAllTokensByUserId(gomock.Any(), fetchedUserID).
+						Return(nil),
+				)
+			},
+		},
+		{
+			name:          "error fetching user",
+			user:          &domain.User{Username: "username", Password: "oldPassword"},
+			newPassword:   "newPassword",
+			expectedError: domain.ErrInternalServerError,
+			mockSetup: func(
+				mockUserRepository *mock.MockUserRepository,
+				mockPasswordHasher *mock.MockPasswordHasher,
+				mockTokenRepository *mock.MockTokenRepository,
+			) {
+				mockUserRepository.
+					EXPECT().
+					GetUserByUsername(gomock.Any(), "username").
+					Return(nil, domain.ErrInternalServerError)
+			},
+		},
+		{
+			name:          "error wrong credentials (user not found)",
+			user:          &domain.User{Username: "username", Password: "oldPassword"},
+			newPassword:   "newPassword",
+			expectedError: domain.ErrWrongCredentials,
+			mockSetup: func(
+				mockUserRepository *mock.MockUserRepository,
+				mockPasswordHasher *mock.MockPasswordHasher,
+				mockTokenRepository *mock.MockTokenRepository,
+			) {
+				mockUserRepository.
+					EXPECT().
+					GetUserByUsername(gomock.Any(), "username").
+					Return(nil, domain.ErrUserNotFound)
+			},
+		},
+		{
+			name:          "error wrong password",
+			user:          &domain.User{Username: "username", Password: "wrongPassword"},
+			newPassword:   "newPassword",
+			expectedError: domain.ErrWrongCredentials,
+			mockSetup: func(
+				mockUserRepository *mock.MockUserRepository,
+				mockPasswordHasher *mock.MockPasswordHasher,
+				mockTokenRepository *mock.MockTokenRepository,
+			) {
+				fetchedUserID := uuid.New()
+				mockUserRepository.
+					EXPECT().
+					GetUserByUsername(gomock.Any(), "username").
+					Return(&domain.User{
+						Id:       fetchedUserID,
+						Username: "username",
+						Password: "hashedOldPassword",
+					}, nil)
+				mockPasswordHasher.
+					EXPECT().
+					Compare("wrongPassword", "hashedOldPassword").
+					Return(domain.ErrWrongCredentials)
+			},
+		},
+		{
+			name:          "error hashing new password",
+			user:          &domain.User{Username: "username", Password: "oldPassword"},
+			newPassword:   "newPassword",
+			expectedError: domain.ErrInternalServerError,
+			mockSetup: func(
+				mockUserRepository *mock.MockUserRepository,
+				mockPasswordHasher *mock.MockPasswordHasher,
+				mockTokenRepository *mock.MockTokenRepository,
+			) {
+				fetchedUserID := uuid.New()
+				gomock.InOrder(
+					mockUserRepository.
+						EXPECT().
+						GetUserByUsername(gomock.Any(), "username").
+						Return(&domain.User{
+							Id:       fetchedUserID,
+							Username: "username",
+							Password: "hashedOldPassword",
+						}, nil),
+					mockPasswordHasher.
+						EXPECT().
+						Compare("oldPassword", "hashedOldPassword").
+						Return(nil),
+					mockPasswordHasher.
+						EXPECT().
+						Hash("newPassword").
+						Return("", domain.ErrInternalServerError),
+				)
+			},
+		},
+		{
+			name:          "error updating password",
+			user:          &domain.User{Username: "username", Password: "oldPassword"},
+			newPassword:   "newPassword",
+			expectedError: domain.ErrInternalServerError,
+			mockSetup: func(
+				mockUserRepository *mock.MockUserRepository,
+				mockPasswordHasher *mock.MockPasswordHasher,
+				mockTokenRepository *mock.MockTokenRepository,
+			) {
+				fetchedUserID := uuid.New()
+				gomock.InOrder(
+					mockUserRepository.
+						EXPECT().
+						GetUserByUsername(gomock.Any(), "username").
+						Return(&domain.User{
+							Id:       fetchedUserID,
+							Username: "username",
+							Password: "hashedOldPassword",
+						}, nil),
+					mockPasswordHasher.
+						EXPECT().
+						Compare("oldPassword", "hashedOldPassword").
+						Return(nil),
+					mockPasswordHasher.
+						EXPECT().
+						Hash("newPassword").
+						Return("hashedNewPassword", nil),
+					mockUserRepository.
+						EXPECT().
+						UpdatePassword(gomock.Any(), fetchedUserID, "hashedNewPassword").
+						Return(domain.ErrInternalServerError),
+				)
+			},
+		},
+		{
+			name:          "error deleting tokens",
+			user:          &domain.User{Username: "username", Password: "oldPassword"},
+			newPassword:   "newPassword",
+			expectedError: domain.ErrInternalServerError,
+			mockSetup: func(
+				mockUserRepository *mock.MockUserRepository,
+				mockPasswordHasher *mock.MockPasswordHasher,
+				mockTokenRepository *mock.MockTokenRepository,
+			) {
+				fetchedUserID := uuid.New()
+				gomock.InOrder(
+					mockUserRepository.
+						EXPECT().
+						GetUserByUsername(gomock.Any(), "username").
+						Return(&domain.User{
+							Id:       fetchedUserID,
+							Username: "username",
+							Password: "hashedOldPassword",
+						}, nil),
+					mockPasswordHasher.
+						EXPECT().
+						Compare("oldPassword", "hashedOldPassword").
+						Return(nil),
+					mockPasswordHasher.
+						EXPECT().
+						Hash("newPassword").
+						Return("hashedNewPassword", nil),
+					mockUserRepository.
+						EXPECT().
+						UpdatePassword(gomock.Any(), fetchedUserID, "hashedNewPassword").
+						Return(nil),
+					mockTokenRepository.
+						EXPECT().
+						DeleteAllTokensByUserId(gomock.Any(), fetchedUserID).
+						Return(domain.ErrInternalServerError),
+				)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUserRepository := mock.NewMockUserRepository(ctrl)
+			mockPasswordHasher := mock.NewMockPasswordHasher(ctrl)
+			mockTokenRepository := mock.NewMockTokenRepository(ctrl)
+			tt.mockSetup(mockUserRepository, mockPasswordHasher, mockTokenRepository)
+
+			err := service.
+				NewUserService(mockUserRepository, mockPasswordHasher, mockTokenRepository).
+				ChangePassword(context.Background(), tt.user, tt.newPassword)
+
+			require.ErrorIs(t, err, tt.expectedError)
+		})
+	}
+}

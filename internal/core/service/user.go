@@ -85,3 +85,33 @@ func (s *UserService) ChangeEmail(ctx context.Context, user *domain.User, email 
 
 	return nil
 }
+
+func (s *UserService) ChangePassword(ctx context.Context, user *domain.User, password string) error {
+	fetchedUser, err := s.userRepository.GetUserByUsername(ctx, user.Username)
+	if errors.Is(err, domain.ErrUserNotFound) {
+		return domain.ErrWrongCredentials
+	} else if err != nil {
+		return domain.ErrInternalServerError
+	}
+
+	err = s.passwordHasher.Compare(user.Password, fetchedUser.Password)
+	if err != nil {
+		return err
+	}
+
+	hash, err := s.passwordHasher.Hash(password)
+	if err != nil {
+		return err
+	}
+
+	err = s.userRepository.UpdatePassword(ctx, fetchedUser.Id, hash)
+	if err != nil {
+		return err
+	}
+
+	err = s.tokenRepository.DeleteAllTokensByUserId(ctx, fetchedUser.Id)
+	if err != nil {
+		return err
+	}
+	return nil
+}
