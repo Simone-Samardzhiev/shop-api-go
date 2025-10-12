@@ -227,6 +227,34 @@ func (m *MockUserService) EXPECT() *MockUserServiceMockRecorder {
 	return m.recorder
 }
 
+// ChangeEmail mocks base method.
+func (m *MockUserService) ChangeEmail(ctx context.Context, user *domain.User, password string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeEmail", ctx, user, password)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangeEmail indicates an expected call of ChangeEmail.
+func (mr *MockUserServiceMockRecorder) ChangeEmail(ctx, user, password any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeEmail", reflect.TypeOf((*MockUserService)(nil).ChangeEmail), ctx, user, password)
+}
+
+// ChangeUsername mocks base method.
+func (m *MockUserService) ChangeUsername(ctx context.Context, user *domain.User, username string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangeUsername", ctx, user, username)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangeUsername indicates an expected call of ChangeUsername.
+func (mr *MockUserServiceMockRecorder) ChangeUsername(ctx, user, username any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeUsername", reflect.TypeOf((*MockUserService)(nil).ChangeUsername), ctx, user, username)
+}
+
 // Register mocks base method.
 func (m *MockUserService) Register(ctx context.Context, user *domain.User) error {
 	m.ctrl.T.Helper()

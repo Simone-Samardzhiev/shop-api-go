@@ -343,3 +343,179 @@ func TestUserService_ChangeUsername(t *testing.T) {
 		})
 	}
 }
+
+func TestUserService_ChangeEmail(t *testing.T) {
+	tests := []struct {
+		name          string
+		user          *domain.User
+		email         string
+		expectedError error
+		mockSetup     func(
+			mockUserRepository *mock.MockUserRepository,
+			mockPasswordHasher *mock.MockPasswordHasher,
+			mockTokenRepository *mock.MockTokenRepository,
+		)
+	}{
+		{
+			name: "success",
+			user: &domain.User{
+				Username: "username",
+				Password: "password",
+			},
+			email:         "newEmail",
+			expectedError: nil,
+			mockSetup: func(
+				mockUserRepository *mock.MockUserRepository,
+				mockPasswordHasher *mock.MockPasswordHasher,
+				mockTokenRepository *mock.MockTokenRepository,
+			) {
+				gomock.InOrder(
+					mockUserRepository.
+						EXPECT().
+						GetUserByUsername(
+							gomock.AssignableToTypeOf(context.Background()),
+							"username",
+						).
+						Return(&domain.User{
+							Username: "username",
+							Password: "hashedPassword",
+						}, nil),
+					mockPasswordHasher.
+						EXPECT().
+						Compare("password", "hashedPassword").
+						Return(nil),
+					mockUserRepository.
+						EXPECT().
+						UpdateEmail(
+							gomock.AssignableToTypeOf(context.Background()),
+							gomock.AssignableToTypeOf(uuid.UUID{}),
+							"newEmail",
+						).Return(nil),
+				)
+			},
+		}, {
+			name: "error fetching user",
+			user: &domain.User{
+				Username: "username",
+				Password: "password",
+			},
+			email:         "newEmail",
+			expectedError: domain.ErrInternalServerError,
+			mockSetup: func(
+				mockUserRepository *mock.MockUserRepository,
+				mockPasswordHasher *mock.MockPasswordHasher,
+				mockTokenRepository *mock.MockTokenRepository,
+			) {
+				mockUserRepository.
+					EXPECT().
+					GetUserByUsername(
+						gomock.AssignableToTypeOf(context.Background()),
+						"username",
+					).
+					Return(nil, domain.ErrInternalServerError)
+			},
+		}, {
+			name: "error wrong credentials",
+			user: &domain.User{
+				Username: "username",
+				Password: "password",
+			},
+			email:         "newEmail",
+			expectedError: domain.ErrWrongCredentials,
+			mockSetup: func(
+				mockUserRepository *mock.MockUserRepository,
+				mockPasswordHasher *mock.MockPasswordHasher,
+				mockTokenRepository *mock.MockTokenRepository,
+			) {
+				mockUserRepository.
+					EXPECT().
+					GetUserByUsername(
+						gomock.AssignableToTypeOf(context.Background()),
+						"username",
+					).
+					Return(nil, domain.ErrUserNotFound)
+			},
+		}, {
+			name: "error wrong credentials",
+			user: &domain.User{
+				Username: "username",
+				Password: "password",
+			},
+			email:         "newEmail",
+			expectedError: domain.ErrWrongCredentials,
+			mockSetup: func(
+				mockUserRepository *mock.MockUserRepository,
+				mockPasswordHasher *mock.MockPasswordHasher,
+				mockTokenRepository *mock.MockTokenRepository,
+			) {
+				gomock.InOrder(
+					mockUserRepository.
+						EXPECT().
+						GetUserByUsername(
+							gomock.AssignableToTypeOf(context.Background()),
+							"username",
+						).
+						Return(&domain.User{
+							Username: "username",
+							Password: "hashedPassword",
+						}, nil),
+					mockPasswordHasher.
+						EXPECT().
+						Compare("password", "hashedPassword").
+						Return(domain.ErrWrongCredentials),
+				)
+			},
+		}, {
+			name: "error updating email",
+			user: &domain.User{
+				Username: "username",
+				Password: "password",
+			},
+			email:         "newEmail",
+			expectedError: domain.ErrInternalServerError,
+			mockSetup: func(
+				mockUserRepository *mock.MockUserRepository,
+				mockPasswordHasher *mock.MockPasswordHasher,
+				mockTokenRepository *mock.MockTokenRepository,
+			) {
+				mockUserRepository.
+					EXPECT().
+					GetUserByUsername(
+						gomock.AssignableToTypeOf(context.Background()),
+						"username",
+					).
+					Return(&domain.User{
+						Username: "username",
+						Password: "hashedPassword",
+					}, nil)
+				mockPasswordHasher.
+					EXPECT().
+					Compare("password", "hashedPassword").
+					Return(nil)
+				mockUserRepository.
+					EXPECT().
+					UpdateEmail(
+						gomock.AssignableToTypeOf(context.Background()),
+						gomock.AssignableToTypeOf(uuid.UUID{}),
+						"newEmail",
+					).
+					Return(domain.ErrInternalServerError)
+			},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			mockUserRepository := mock.NewMockUserRepository(ctrl)
+			mockPasswordHasher := mock.NewMockPasswordHasher(ctrl)
+			mockTokenRepository := mock.NewMockTokenRepository(ctrl)
+			tt.mockSetup(mockUserRepository, mockPasswordHasher, mockTokenRepository)
+
+			err := service.
+				NewUserService(mockUserRepository, mockPasswordHasher, mockTokenRepository).
+				ChangeEmail(context.Background(), tt.user, tt.email)
+			require.ErrorIs(t, err, tt.expectedError)
+		})
+	}
+}

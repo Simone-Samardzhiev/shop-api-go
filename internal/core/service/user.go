@@ -64,3 +64,24 @@ func (s *UserService) ChangeUsername(ctx context.Context, user *domain.User, use
 
 	return nil
 }
+
+func (s *UserService) ChangeEmail(ctx context.Context, user *domain.User, email string) error {
+	fetchedUser, err := s.userRepository.GetUserByUsername(ctx, user.Username)
+	if errors.Is(err, domain.ErrUserNotFound) {
+		return domain.ErrWrongCredentials
+	} else if err != nil {
+		return domain.ErrInternalServerError
+	}
+
+	err = s.passwordHasher.Compare(user.Password, fetchedUser.Password)
+	if err != nil {
+		return err
+	}
+
+	err = s.userRepository.UpdateEmail(ctx, fetchedUser.Id, email)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

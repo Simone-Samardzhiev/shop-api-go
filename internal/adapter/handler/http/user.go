@@ -75,3 +75,33 @@ func (h *UserHandler) ChangeUsername(c *gin.Context) {
 	}
 	c.Status(http.StatusCreated)
 }
+
+// changeEmailRequest represent a request body for changing username.
+type changeEmailRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+	NewEmail string `json:"newEmail" binding:"required,min_bytes=8,max_bytes=255"`
+}
+
+func (h *UserHandler) ChangeEmail(c *gin.Context) {
+	var req changeEmailRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		handleBindingError(c, err)
+		return
+	}
+
+	err := h.userService.
+		ChangeEmail(
+			c,
+			&domain.User{
+				Username: req.Username,
+				Password: req.Password,
+			},
+			req.NewEmail)
+	if err != nil {
+		handleError(c, err)
+		return
+	}
+
+	c.Status(http.StatusCreated)
+}

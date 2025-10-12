@@ -40,4 +40,6 @@ type UserService interface {
 	Register(ctx context.Context, user *domain.User) error
 	// ChangeUsername changes the username of a user by validating the credentials.
 	ChangeUsername(ctx context.Context, user *domain.User, username string) error
+	// ChangeEmail changes the email of a user by validating the credentials.
+	ChangeEmail(ctx context.Context, user *domain.User, email string) error
 }

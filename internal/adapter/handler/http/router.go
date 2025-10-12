@@ -46,6 +46,7 @@ func NewRouter(
 		{
 			user.POST("/register", userHandler.Register)
 			user.PATCH("/me/change-username", userHandler.ChangeUsername)
+			user.PATCH("/me/change-email", userHandler.ChangeEmail)
 		}
 
 		admin := v1.Group("/admin")
