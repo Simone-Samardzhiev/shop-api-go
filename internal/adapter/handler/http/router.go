@@ -45,7 +45,7 @@ func NewRouter(
 		user := v1.Group("/users")
 		{
 			user.POST("/register", userHandler.Register)
-			user.PUT("/me/change-username", userHandler.ChangeUsername)
+			user.PATCH("/me/change-username", userHandler.ChangeUsername)
 		}
 
 		admin := v1.Group("/admin")
@@ -56,16 +56,16 @@ func NewRouter(
 			admin.GET("/search/by-username", adminHandler.SearchUserByUsername)
 			admin.GET("/search/by-email", adminHandler.SearchUserByEmail)
 			admin.GET("/by-id", adminHandler.GetUserById)
-			admin.PUT("/update/username", adminHandler.UpdateUsername)
-			admin.PUT("/update/email", adminHandler.UpdateEmail)
-			admin.PUT("/update/password", adminHandler.UpdatePassword)
-			admin.PUT("/update/role", adminHandler.UpdateRole)
+			admin.PATCH("/update/username", adminHandler.UpdateUsername)
+			admin.PATCH("/update/email", adminHandler.UpdateEmail)
+			admin.PATCH("/update/password", adminHandler.UpdatePassword)
+			admin.PATCH("/update/role", adminHandler.UpdateRole)
 		}
 
 		auth := v1.Group("/auth")
 		{
 			auth.POST("/login", authHandler.Login)
-			auth.GET("/refresh-session", jwtMiddleware, authHandler.RefreshSession)
+			auth.POST("/refresh-session", jwtMiddleware, authHandler.RefreshSession)
 		}
 	}
 	return &Router{r, appConfig}
