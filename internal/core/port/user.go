@@ -38,4 +38,6 @@ type UserRepository interface {
 type UserService interface {
 	// Register adds a new user.
 	Register(ctx context.Context, user *domain.User) error
+	// ChangeUsername changes the username of a user by validating the credentials.
+	ChangeUsername(ctx context.Context, user *domain.User, username string) error
 }

@@ -66,6 +66,15 @@ func (t *TokenRepository) DeleteToken(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+func (t *TokenRepository) DeleteAllTokensByUserId(ctx context.Context, userId uuid.UUID) error {
+	_, err := t.db.ExecContext(ctx, "DELETE FROM tokens WHERE user_id = $1", userId)
+	if err != nil {
+		zap.L().Error("postgres/TokenRepository.DeleteAllTokensByUserId failed")
+		return domain.ErrInternalServerError
+	}
+	return nil
+}
+
 func (t *TokenRepository) DeleteExpiredTokens() error {
 	_, err := t.db.Exec("DELETE FROM tokens WHERE expires < NOW()")
 	if err != nil {

@@ -163,6 +163,20 @@ func (mr *MockTokenRepositoryMockRecorder) AddToken(ctx, token any) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddToken", reflect.TypeOf((*MockTokenRepository)(nil).AddToken), ctx, token)
 }
 
+// DeleteAllTokensByUserId mocks base method.
+func (m *MockTokenRepository) DeleteAllTokensByUserId(ctx context.Context, userId uuid.UUID) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteAllTokensByUserId", ctx, userId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteAllTokensByUserId indicates an expected call of DeleteAllTokensByUserId.
+func (mr *MockTokenRepositoryMockRecorder) DeleteAllTokensByUserId(ctx, userId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteAllTokensByUserId", reflect.TypeOf((*MockTokenRepository)(nil).DeleteAllTokensByUserId), ctx, userId)
+}
+
 // DeleteExpiredTokens mocks base method.
 func (m *MockTokenRepository) DeleteExpiredTokens() error {
 	m.ctrl.T.Helper()

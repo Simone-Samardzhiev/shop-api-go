@@ -29,6 +29,8 @@ type TokenRepository interface {
 	AddToken(ctx context.Context, token *domain.Token) error
 	// DeleteToken deletes a token with specified id.
 	DeleteToken(ctx context.Context, id uuid.UUID) error
+	// DeleteAllTokensByUserId deletes all tokens with specific user id.
+	DeleteAllTokensByUserId(ctx context.Context, userId uuid.UUID) error
 	// DeleteExpiredTokens deletes all tokens that have expired.
 	DeleteExpiredTokens() error
 }

@@ -51,18 +51,18 @@ func main() {
 		),
 	)
 
+	userRepository := repository.NewUserRepository(db)
+	tokenRepository := repository.NewTokenRepository(db)
+
+	jwtTokenGenerator := jwt.NewTokenGenerator(container.JWT)
 	passwordHasher := &bcrypt.PasswordHasher{}
 
-	userRepository := repository.NewUserRepository(db)
-	userService := service.NewUserService(userRepository, passwordHasher)
-	userHandler := http.NewUserHandler(userService)
-
-	adminService := service.NewAdminService(userRepository, passwordHasher)
-	adminHandler := http.NewAdminHandler(adminService)
-
-	tokenRepository := repository.NewTokenRepository(db)
-	jwtTokenGenerator := jwt.NewTokenGenerator(container.JWT)
+	userService := service.NewUserService(userRepository, passwordHasher, tokenRepository)
 	authService := service.NewAuthService(jwtTokenGenerator, passwordHasher, tokenRepository, userRepository)
+	adminService := service.NewAdminService(userRepository, passwordHasher)
+
+	userHandler := http.NewUserHandler(userService)
+	adminHandler := http.NewAdminHandler(adminService)
 	authHandler := http.NewAuthHandler(authService)
 
 	ctx, cancel := context.WithCancel(context.Background())
