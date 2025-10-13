@@ -1,4 +1,4 @@
-CREATE TABLE category_section
+CREATE TABLE category_sections
 (
     id   UUID PRIMARY KEY,
     name VARCHAR(100) NOT NULL UNIQUE
@@ -8,7 +8,7 @@ CREATE TABLE categories
 (
     id         UUID PRIMARY KEY,
     name       VARCHAR(100) NOT NULL,
-    section_id UUID REFERENCES category_section (id) ON DELETE CASCADE,
+    section_id UUID REFERENCES category_sections (id) ON DELETE CASCADE,
     UNIQUE (name, section_id)
 );
 
@@ -33,7 +33,7 @@ CREATE TABLE products
     updated_at  TIMESTAMP      NOT NULL DEFAULT now()
 );
 
-CREATE TABLE product_subcategories
+CREATE TABLE products_subcategories
 (
     product_id     UUID REFERENCES products (id) ON DELETE CASCADE,
     subcategory_id UUID REFERENCES subcategories (id) ON DELETE RESTRICT,
