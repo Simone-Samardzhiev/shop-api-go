@@ -53,15 +53,18 @@ func NewRouter(
 		admin := v1.Group("/admin")
 		admin.Use(jwtMiddleware)
 		{
-			admin.GET("/pagination-by-offset", adminHandler.GetUsersByOffsetPagination)
-			admin.GET("/pagination-by-time", adminHandler.GetUsersByTimePagination)
-			admin.GET("/search/by-username", adminHandler.SearchUserByUsername)
-			admin.GET("/search/by-email", adminHandler.SearchUserByEmail)
-			admin.GET("/by-id", adminHandler.GetUserById)
-			admin.PATCH("/update/username", adminHandler.UpdateUsername)
-			admin.PATCH("/update/email", adminHandler.UpdateEmail)
-			admin.PATCH("/update/password", adminHandler.UpdatePassword)
-			admin.PATCH("/update/role", adminHandler.UpdateRole)
+			adminUser := admin.Group("/users")
+			{
+				adminUser.GET("/pagination-by-offset", adminHandler.GetUsersByOffsetPagination)
+				adminUser.GET("/pagination-by-time", adminHandler.GetUsersByTimePagination)
+				adminUser.GET("/search/by-username", adminHandler.SearchUserByUsername)
+				adminUser.GET("/search/by-email", adminHandler.SearchUserByEmail)
+				adminUser.GET("/by-id", adminHandler.GetUserById)
+				adminUser.PATCH("/update/username", adminHandler.UpdateUsername)
+				adminUser.PATCH("/update/email", adminHandler.UpdateEmail)
+				adminUser.PATCH("/update/password", adminHandler.UpdatePassword)
+				adminUser.PATCH("/update/role", adminHandler.UpdateRole)
+			}
 		}
 
 		auth := v1.Group("/auth")
