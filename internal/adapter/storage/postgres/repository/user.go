@@ -38,28 +38,25 @@ func (r *UserRepository) AddUser(ctx context.Context, user *domain.User) error {
 
 	if err != nil {
 		var pqErr *pq.Error
-		if errors.As(err, &pqErr) {
-			if pqErr.Code == "23505" {
-				switch pqErr.Constraint {
-				case "users_username_key":
-					return domain.ErrUsernameAlreadyInUse
-				case "users_email_key":
-					return domain.ErrEmailAlreadyInUse
-				default:
-					zap.L().Error("postgres/UserRepository.AddUser failed",
-						zap.String("id", user.Id.String()),
-						zap.String("username", user.Username),
-						zap.String("email", user.Email),
-						zap.String("createdAt", user.CreatedAt.String()),
-						zap.String("updatedAt", user.UpdatedAt.String()),
-						zap.Error(err),
-					)
-					return domain.ErrInternalServerError
-				}
+		if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+			switch pqErr.Constraint {
+			case "users_username_key":
+				return domain.ErrUsernameAlreadyInUse
+			case "users_email_key":
+				return domain.ErrEmailAlreadyInUse
 			}
 		}
 
-		zap.L().Error("postgres/UserRepository.AddUser failed", zap.Error(err))
+		zap.L().
+			Error(
+				"postgres/UserRepository.AddUser failed",
+				zap.String("id", user.Id.String()),
+				zap.String("username", user.Username),
+				zap.String("email", user.Email),
+				zap.String("createdAt", user.CreatedAt.String()),
+				zap.String("updatedAt", user.UpdatedAt.String()),
+				zap.Error(err),
+			)
 		return domain.ErrInternalServerError
 	}
 	return nil
@@ -79,10 +76,12 @@ func (r *UserRepository) GetUserByUsername(ctx context.Context, username string)
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, domain.ErrUserNotFound
 		} else {
-			zap.L().Error("postgres/UserRepository.GetUserByUsername failed",
-				zap.String("username", username),
-				zap.Error(err),
-			)
+			zap.L().
+				Error(
+					"postgres/UserRepository.GetUserByUsername failed",
+					zap.String("username", username),
+					zap.Error(err),
+				)
 			return nil, domain.ErrInternalServerError
 		}
 	}
@@ -99,18 +98,24 @@ func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, l
 		limit,
 	)
 	if err != nil {
-		zap.L().Error("postgres/UserRepository.GetUsersByOffestPagination failed",
-			zap.Int("page", page),
-			zap.Int("limit", limit),
-			zap.Error(err),
-		)
+		zap.L().
+			Error(
+				"postgres/UserRepository.GetUsersByOffestPagination failed",
+				zap.Int("page", page),
+				zap.Int("limit", limit),
+				zap.Error(err),
+			)
 		return nil, domain.ErrInternalServerError
 	}
 
 	defer func() {
 		closeErr := rows.Close()
 		if closeErr != nil {
-			zap.L().Error("postgres/UserRepository.GetUsersByOffestPagination failed", zap.Error(closeErr))
+			zap.L().
+				Error(
+					"postgres/UserRepository.GetUsersByOffestPagination failed closing rows",
+					zap.Error(closeErr),
+				)
 		}
 	}()
 
@@ -119,7 +124,11 @@ func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, l
 		var user domain.User
 		scanErr := rows.Scan(&user.Id, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
 		if scanErr != nil {
-			zap.L().Error("postgres/UserRepository.GetUsersByOffestPagination failed", zap.Error(scanErr))
+			zap.L().
+				Error(
+					"postgres/UserRepository.GetUsersByOffestPagination failed scanning rwo",
+					zap.Error(scanErr),
+				)
 			return users, domain.ErrInternalServerError
 		}
 
@@ -140,14 +149,24 @@ func (r *UserRepository) GetUsersByTimePagination(ctx context.Context, after tim
 	)
 
 	if err != nil {
-		zap.L().Error("postgres/UserRepository.GetUsersByTimePagination failed", zap.Error(err))
+		zap.L().
+			Error(
+				"postgres/UserRepository.GetUsersByTimePagination failed",
+				zap.Time("after", after),
+				zap.Int("limit", limit),
+				zap.Error(err),
+			)
 		return nil, domain.ErrInternalServerError
 	}
 
 	defer func() {
 		closeErr := rows.Close()
 		if closeErr != nil {
-			zap.L().Error("postgres/UserRepository.GetUsersByTimePagination failed", zap.Error(closeErr))
+			zap.L().
+				Error(
+					"postgres/UserRepository.GetUsersByTimePagination failed closing rows",
+					zap.Error(closeErr),
+				)
 		}
 	}()
 
@@ -156,7 +175,11 @@ func (r *UserRepository) GetUsersByTimePagination(ctx context.Context, after tim
 		var user domain.User
 		err = rows.Scan(&user.Id, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
 		if err != nil {
-			zap.L().Error("postgres/UserRepository.GetUsersByTimePagination failed", zap.Error(err))
+			zap.L().
+				Error(
+					"postgres/UserRepository.GetUsersByTimePagination failed scanning row",
+					zap.Error(err),
+				)
 			return nil, domain.ErrInternalServerError
 		}
 		users = append(users, user)
@@ -177,14 +200,24 @@ func (r *UserRepository) SearchUserByUsername(ctx context.Context, username stri
 	)
 
 	if err != nil {
-		zap.L().Error("postgres/UserRepository.SearchUserByUsername failed", zap.Error(err))
+		zap.L().
+			Error(
+				"postgres/UserRepository.SearchUserByUsername failed",
+				zap.String("username", username),
+				zap.Int("limit", limit),
+				zap.Error(err),
+			)
 		return nil, domain.ErrInternalServerError
 	}
 
 	defer func() {
 		closeErr := rows.Close()
 		if closeErr != nil {
-			zap.L().Error("postgres/UserRepository.SearchUserByUsername failed", zap.Error(closeErr))
+			zap.L().
+				Error(
+					"postgres/UserRepository.SearchUserByUsername failed closing rows",
+					zap.Error(closeErr),
+				)
 		}
 	}()
 
@@ -193,7 +226,11 @@ func (r *UserRepository) SearchUserByUsername(ctx context.Context, username stri
 		var user domain.User
 		err = rows.Scan(&user.Id, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
 		if err != nil {
-			zap.L().Error("postgres/UserRepository.SearchUserByUsername failed", zap.Error(err))
+			zap.L().
+				Error(
+					"postgres/UserRepository.SearchUserByUsername failed scanning row",
+					zap.Error(err),
+				)
 			return nil, domain.ErrInternalServerError
 		}
 		users = append(users, user)
@@ -214,14 +251,24 @@ func (r *UserRepository) SearchUserByEmail(ctx context.Context, email string, li
 	)
 
 	if err != nil {
-		zap.L().Error("postgres/UserRepository.SearchUserByEmail failed", zap.Error(err))
+		zap.L().
+			Error(
+				"postgres/UserRepository.SearchUserByEmail failed",
+				zap.String("email", email),
+				zap.Int("limit", limit),
+				zap.Error(err),
+			)
 		return nil, domain.ErrInternalServerError
 	}
 
 	defer func() {
 		closeErr := rows.Close()
 		if closeErr != nil {
-			zap.L().Error("postgres/UserRepository.SearchUserByEmail failed", zap.Error(closeErr))
+			zap.L().
+				Error(
+					"postgres/UserRepository.SearchUserByEmail failed closing rows",
+					zap.Error(closeErr),
+				)
 		}
 	}()
 
@@ -230,7 +277,11 @@ func (r *UserRepository) SearchUserByEmail(ctx context.Context, email string, li
 		var user domain.User
 		err = rows.Scan(&user.Id, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
 		if err != nil {
-			zap.L().Error("postgres/UserRepository.SearchUserByEmail failed", zap.Error(err))
+			zap.L().
+				Error(
+					"postgres/UserRepository.SearchUserByEmail failed scanning row",
+					zap.Error(err),
+				)
 			return nil, domain.ErrInternalServerError
 		}
 
@@ -253,7 +304,12 @@ func (r *UserRepository) GetUserById(ctx context.Context, id uuid.UUID) (*domain
 	if errors.Is(err, sql.ErrNoRows) {
 		return nil, domain.ErrUserNotFound
 	} else if err != nil {
-		zap.L().Error("postgres/UserRepository.GetUserById failed", zap.Error(err))
+		zap.L().
+			Error(
+				"postgres/UserRepository.GetUserById failed",
+				zap.String("id", id.String()),
+				zap.Error(err),
+			)
 		return nil, domain.ErrInternalServerError
 	}
 	return &user, nil
@@ -275,13 +331,23 @@ func (r *UserRepository) UpdateUsername(ctx context.Context, id uuid.UUID, usern
 			return domain.ErrUsernameAlreadyInUse
 		}
 
-		zap.L().Error("postgres/UserRepository.UpdateUsername failed", zap.Error(err))
+		zap.L().
+			Error(
+				"postgres/UserRepository.UpdateUsername failed",
+				zap.String("id", id.String()),
+				zap.String("username", username),
+				zap.Error(err),
+			)
 		return domain.ErrInternalServerError
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		zap.L().Error("postgres/UserRepository.UpdateUsername failed", zap.Error(err))
+		zap.L().
+			Error(
+				"postgres/UserRepository.UpdateUsername failed getting rows affected",
+				zap.Error(err),
+			)
 		return domain.ErrInternalServerError
 	}
 
@@ -307,13 +373,23 @@ func (r *UserRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email st
 			return domain.ErrEmailAlreadyInUse
 		}
 
-		zap.L().Error("postgres/UserRepository.UpdateEmail failed", zap.Error(err))
+		zap.L().
+			Error(
+				"postgres/UserRepository.UpdateEmail failed",
+				zap.String("id", id.String()),
+				zap.String("email", email),
+				zap.Error(err),
+			)
 		return domain.ErrInternalServerError
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		zap.L().Error("postgres/UserRepository.UpdateEmail failed", zap.Error(err))
+		zap.L().
+			Error(
+				"postgres/UserRepository.UpdateEmail failed getting affected rows",
+				zap.Error(err),
+			)
 		return domain.ErrInternalServerError
 	}
 	if rowsAffected == 0 {
@@ -333,18 +409,22 @@ func (r *UserRepository) UpdatePassword(ctx context.Context, id uuid.UUID, passw
 		id,
 	)
 	if err != nil {
-		var pqErr *pq.Error
-		if errors.As(err, &pqErr) {
-			return domain.ErrEmailAlreadyInUse
-		}
-
-		zap.L().Error("postgres/UserRepository.UpdateEmail failed", zap.Error(err))
+		zap.L().
+			Error(
+				"postgres/UserRepository.UpdatePassword failed",
+				zap.String("id", id.String()),
+				zap.Error(err),
+			)
 		return domain.ErrInternalServerError
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		zap.L().Error("postgres/UserRepository.UpdateEmail failed", zap.Error(err))
+		zap.L().
+			Error(
+				"postgres/UserRepository.UpdatePassword getting rows affected",
+				zap.Error(err),
+			)
 		return domain.ErrInternalServerError
 	}
 	if rowsAffected == 0 {
@@ -364,13 +444,22 @@ func (r *UserRepository) UpdateRole(ctx context.Context, id uuid.UUID, role doma
 	)
 
 	if err != nil {
-		zap.L().Error("postgres/UserRepository.UpdateRole failed", zap.Error(err))
+		zap.L().Error(
+			"postgres/UserRepository.UpdateRole failed",
+			zap.String("id", id.String()),
+			zap.String("role", string(role)),
+			zap.Error(err),
+		)
 		return domain.ErrInternalServerError
 	}
 
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		zap.L().Error("postgres/UserRepository.UpdateRole failed", zap.Error(err))
+		zap.L().
+			Error(
+				"postgres/UserRepository.UpdateRole failed getting rows affected",
+				zap.Error(err),
+			)
 		return domain.ErrInternalServerError
 	}
 
