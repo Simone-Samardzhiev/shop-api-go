@@ -24,6 +24,8 @@ type UserRepository interface {
 	SearchUserByEmail(ctx context.Context, email string, limit int) ([]domain.User, error)
 	// GetUserById fetches a user by specific.
 	GetUserById(ctx context.Context, id uuid.UUID) (*domain.User, error)
+	// UpdateUser updates the fields of a user by specific id.
+	UpdateUser(ctx context.Context, update *domain.UserUpdate) error
 	// UpdateUsername updates the username of specific user by id.
 	UpdateUsername(ctx context.Context, id uuid.UUID, username string) error
 	// UpdateEmail updates the email of specific user by id.

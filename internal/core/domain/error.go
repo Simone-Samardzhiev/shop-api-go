@@ -15,11 +15,14 @@ var (
 	ErrWrongCredentials = errors.New("wrong credentials")
 	// ErrUserNotFound is an error for when user couldn't be found.
 	ErrUserNotFound = errors.New("user not found")
+	// ErrNoUserFieldsToUpdate is an error for when all user update fields are empty(nil)
+	ErrNoUserFieldsToUpdate = errors.New("no user fields to update")
 	// ErrInvalidToken is an error for when token parsing fails.
 	ErrInvalidToken = errors.New("invalid token")
 	// ErrInvalidTokenType is an error for when user use invalid token type.
 	ErrInvalidTokenType = errors.New("invalid token type")
-	// ErrInvalidTokenRole is an error for when user tries to access a resource, to which he doesn't have a precision to access.
+	// ErrInvalidTokenRole is an error for when user tries to access a resource,
+	// to which he doesn't have a precision to access.
 	ErrInvalidTokenRole = errors.New("invalid token role")
 	// ErrMalformedToken is an error for when token data is invalid.
 	ErrMalformedToken = errors.New("invalid token subject")

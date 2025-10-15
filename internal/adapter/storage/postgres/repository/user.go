@@ -315,6 +315,59 @@ func (r *UserRepository) GetUserById(ctx context.Context, id uuid.UUID) (*domain
 	return &user, nil
 }
 
+func (r *UserRepository) UpdateUser(ctx context.Context, update *domain.UserUpdate) error {
+	result, err := r.db.ExecContext(
+		ctx,
+		`UPDATE users 
+		SET username = COALESCE($1, username),
+		email = COALESCE($2, email),
+		password = COALESCE($3, password),
+		role = COALESCE($4, role),
+		updated_at = now()
+		WHERE id = $5`,
+		update.Username,
+		update.Email,
+		update.Password,
+		update.Role,
+		update.Id,
+	)
+
+	if err != nil {
+		zapFields := make([]zap.Field, 0, 3)
+		if update.Username != nil {
+			zapFields = append(zapFields, zap.String("username", *update.Username))
+		}
+		if update.Email != nil {
+			zapFields = append(zapFields, zap.String("email", *update.Email))
+		}
+		if update.Role != nil {
+			zapFields = append(zapFields, zap.String("role", string(*update.Role)))
+		}
+
+		zap.L().
+			Error(
+				"postgres/UserRepository.UpdateUser failed",
+				zapFields...,
+			)
+		return domain.ErrInternalServerError
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		zap.L().
+			Error(
+				"postgres/UserRepository.UpdateUser failed getting rows affected",
+				zap.Error(err),
+			)
+		return domain.ErrInternalServerError
+	}
+
+	if rowsAffected == 0 {
+		return domain.ErrUserNotFound
+	}
+	return nil
+}
+
 func (r *UserRepository) UpdateUsername(ctx context.Context, id uuid.UUID, username string) error {
 	result, err := r.db.ExecContext(
 		ctx,

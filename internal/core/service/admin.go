@@ -98,7 +98,7 @@ func (s *AdminService) GetUserById(ctx context.Context, token *domain.Token, id 
 	return user, nil
 }
 
-func (s *AdminService) UpdateUsername(ctx context.Context, token *domain.Token, id uuid.UUID, username string) error {
+func (s *AdminService) UpdateUser(ctx context.Context, token *domain.Token, update *domain.UserUpdate) error {
 	if token.TokenType != domain.AccessToken {
 		return domain.ErrInvalidTokenType
 	}
@@ -106,42 +106,33 @@ func (s *AdminService) UpdateUsername(ctx context.Context, token *domain.Token, 
 		return domain.ErrInvalidTokenRole
 	}
 
-	return s.userRepository.UpdateUsername(ctx, id, username)
-}
+	hasFieldToUpdate := false
 
-func (s *AdminService) UpdateEmail(ctx context.Context, token *domain.Token, id uuid.UUID, email string) error {
-	if token.TokenType != domain.AccessToken {
-		return domain.ErrInvalidTokenType
+	if update.Username != nil {
+		hasFieldToUpdate = true
 	}
-	if token.UserRole != domain.Admin {
-		return domain.ErrInvalidTokenRole
+	if update.Email != nil {
+		hasFieldToUpdate = true
 	}
-	return s.userRepository.UpdateEmail(ctx, id, email)
-}
+	if update.Password != nil {
+		hash, err := s.passwordHasher.Hash(*update.Password)
+		if err != nil {
+			return err
+		}
+		update.Password = &hash
+		hasFieldToUpdate = true
+	}
+	if update.Role != nil {
+		hasFieldToUpdate = true
+	}
 
-func (s *AdminService) UpdatePassword(ctx context.Context, token *domain.Token, id uuid.UUID, password string) error {
-	if token.TokenType != domain.AccessToken {
-		return domain.ErrInvalidTokenType
-	}
-	if token.UserRole != domain.Admin {
-		return domain.ErrInvalidTokenRole
+	if !hasFieldToUpdate {
+		return domain.ErrNoUserFieldsToUpdate
 	}
 
-	hash, err := s.passwordHasher.Hash(password)
-	if err != nil {
+	if err := s.userRepository.UpdateUser(ctx, update); err != nil {
 		return err
 	}
 
-	return s.userRepository.UpdatePassword(ctx, id, hash)
-}
-
-func (s *AdminService) UpdateRole(ctx context.Context, token *domain.Token, id uuid.UUID, role domain.UserRole) error {
-	if token.TokenType != domain.AccessToken {
-		return domain.ErrInvalidTokenType
-	}
-	if token.UserRole != domain.Admin {
-		return domain.ErrInvalidTokenRole
-	}
-
-	return s.userRepository.UpdateRole(ctx, id, role)
+	return nil
 }

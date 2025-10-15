@@ -223,46 +223,16 @@ func (h *AdminHandler) GetUserById(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
-// updateUsernameRequest represent a request body to update username.
-type updateUsernameRequest struct {
-	Username string    `json:"username" binding:"required,min_bytes=8,max_bytes=255"`
-	Id       uuid.UUID `json:"id" binding:"required"`
+// updateUserRequest represent a request body for updating user field.
+type updateUserRequest struct {
+	Id       uuid.UUID        `json:"id" binding:"required"`
+	Username *string          `json:"username" binding:"omitempty,min_bytes=8,max_bytes=255"`
+	Email    *string          `json:"email" binding:"omitempty,min_bytes=8,max_bytes=255"`
+	Password *string          `json:"password" binding:"omitempty,password"`
+	Role     *domain.UserRole `json:"role" binding:"omitempty,user_role"`
 }
 
-func (h *AdminHandler) UpdateUsername(c *gin.Context) {
-	token, ok := c.Get("token")
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-		return
-	}
-
-	domainToken, ok := token.(*domain.Token)
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-	}
-
-	var req updateUsernameRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handleBindingError(c, err)
-		return
-	}
-
-	err := h.adminService.UpdateUsername(c, domainToken, req.Id, req.Username)
-	if err != nil {
-		handleError(c, err)
-		return
-	}
-
-	c.Status(http.StatusOK)
-}
-
-// updateEmailRequest represent a request body to update email.
-type updateEmailRequest struct {
-	Email string    `json:"email" binding:"required,min_bytes=8,max_bytes=255"`
-	Id    uuid.UUID `json:"id" binding:"required"`
-}
-
-func (h *AdminHandler) UpdateEmail(c *gin.Context) {
+func (h *AdminHandler) UpdateUser(c *gin.Context) {
 	token, ok := c.Get("token")
 	if !ok {
 		handleError(c, domain.ErrInternalServerError)
@@ -275,79 +245,21 @@ func (h *AdminHandler) UpdateEmail(c *gin.Context) {
 		return
 	}
 
-	var req updateEmailRequest
+	var req updateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindingError(c, err)
 		return
 	}
 
-	err := h.adminService.UpdateEmail(c, domainToken, req.Id, req.Email)
-	if err != nil {
+	if err := h.adminService.
+		UpdateUser(
+			c,
+			domainToken,
+			domain.NewUserUpdate(req.Id, req.Username, req.Email, req.Password, req.Role),
+		); err != nil {
 		handleError(c, err)
 		return
 	}
-	c.Status(http.StatusOK)
-}
 
-// updatePasswordRequest represent a request body to update password.
-type updatePasswordRequest struct {
-	Password string    `json:"password" binding:"required,password"`
-	Id       uuid.UUID `json:"id" binding:"required"`
-}
-
-func (h *AdminHandler) UpdatePassword(c *gin.Context) {
-	token, ok := c.Get("token")
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-		return
-	}
-	domainToken, ok := token.(*domain.Token)
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-		return
-	}
-
-	var req updatePasswordRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handleBindingError(c, err)
-		return
-	}
-
-	err := h.adminService.UpdatePassword(c, domainToken, req.Id, req.Password)
-	if err != nil {
-		handleError(c, err)
-		return
-	}
-	c.Status(http.StatusOK)
-}
-
-type updateRoleRequest struct {
-	Role domain.UserRole `json:"role" binding:"required,user_role"`
-	Id   uuid.UUID       `json:"id" binding:"required"`
-}
-
-func (h *AdminHandler) UpdateRole(c *gin.Context) {
-	token, ok := c.Get("token")
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-		return
-	}
-	domainToken, ok := token.(*domain.Token)
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-		return
-	}
-
-	var req updateRoleRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handleBindingError(c, err)
-		return
-	}
-
-	err := h.adminService.UpdateRole(c, domainToken, req.Id, req.Role)
-	if err != nil {
-		handleError(c, err)
-		return
-	}
 	c.Status(http.StatusOK)
 }

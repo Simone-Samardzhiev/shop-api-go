@@ -40,3 +40,23 @@ func NewUser(id uuid.UUID, username, email, password string, role UserRole, crea
 		UpdatedAt: UpdatedAt,
 	}
 }
+
+// UserUpdate is an DTO for updating user's fields.
+type UserUpdate struct {
+	Id       uuid.UUID
+	Username *string
+	Email    *string
+	Password *string
+	Role     *UserRole
+}
+
+// NewUserUpdate creates a new UserUpdate instance.
+func NewUserUpdate(id uuid.UUID, username, email, password *string, role *UserRole) *UserUpdate {
+	return &UserUpdate{
+		Id:       id,
+		Username: username,
+		Email:    email,
+		Password: password,
+		Role:     role,
+	}
+}

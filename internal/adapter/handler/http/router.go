@@ -60,10 +60,7 @@ func NewRouter(
 				adminUser.GET("/search/by-username", adminHandler.SearchUserByUsername)
 				adminUser.GET("/search/by-email", adminHandler.SearchUserByEmail)
 				adminUser.GET("/by-id", adminHandler.GetUserById)
-				adminUser.PATCH("/update/username", adminHandler.UpdateUsername)
-				adminUser.PATCH("/update/email", adminHandler.UpdateEmail)
-				adminUser.PATCH("/update/password", adminHandler.UpdatePassword)
-				adminUser.PATCH("/update/role", adminHandler.UpdateRole)
+				adminUser.PATCH("/update", adminHandler.UpdateUser)
 			}
 		}
 

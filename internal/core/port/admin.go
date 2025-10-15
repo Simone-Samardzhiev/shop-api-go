@@ -20,12 +20,6 @@ type AdminService interface {
 	SearchUserByEmail(ctx context.Context, token *domain.Token, email string, limit int) ([]domain.User, error) // GetUserById fetches a user by specific.
 	// GetUserById fetches a user by specific.
 	GetUserById(ctx context.Context, token *domain.Token, id uuid.UUID) (*domain.User, error)
-	// UpdateUsername updates the username of specific user by id.
-	UpdateUsername(ctx context.Context, token *domain.Token, id uuid.UUID, username string) error
-	// UpdateEmail updates the email of specific user by id.
-	UpdateEmail(ctx context.Context, token *domain.Token, id uuid.UUID, email string) error
-	// UpdatePassword updates the password of a specific user by id.
-	UpdatePassword(ctx context.Context, token *domain.Token, id uuid.UUID, password string) error
-	// UpdateRole updates the role of a specific user by id.
-	UpdateRole(ctx context.Context, token *domain.Token, id uuid.UUID, role domain.UserRole) error
+	// UpdateUser updates a specific user field.
+	UpdateUser(ctx context.Context, token *domain.Token, update *domain.UserUpdate) error
 }

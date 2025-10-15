@@ -189,6 +189,20 @@ func (mr *MockUserRepositoryMockRecorder) UpdateRole(ctx, id, role any) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRole", reflect.TypeOf((*MockUserRepository)(nil).UpdateRole), ctx, id, role)
 }
 
+// UpdateUser mocks base method.
+func (m *MockUserRepository) UpdateUser(ctx context.Context, update *domain.UserUpdate) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateUser", ctx, update)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateUser indicates an expected call of UpdateUser.
+func (mr *MockUserRepositoryMockRecorder) UpdateUser(ctx, update any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockUserRepository)(nil).UpdateUser), ctx, update)
+}
+
 // UpdateUsername mocks base method.
 func (m *MockUserRepository) UpdateUsername(ctx context.Context, id uuid.UUID, username string) error {
 	m.ctrl.T.Helper()
@@ -228,17 +242,31 @@ func (m *MockUserService) EXPECT() *MockUserServiceMockRecorder {
 }
 
 // ChangeEmail mocks base method.
-func (m *MockUserService) ChangeEmail(ctx context.Context, user *domain.User, password string) error {
+func (m *MockUserService) ChangeEmail(ctx context.Context, user *domain.User, email string) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ChangeEmail", ctx, user, password)
+	ret := m.ctrl.Call(m, "ChangeEmail", ctx, user, email)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // ChangeEmail indicates an expected call of ChangeEmail.
-func (mr *MockUserServiceMockRecorder) ChangeEmail(ctx, user, password any) *gomock.Call {
+func (mr *MockUserServiceMockRecorder) ChangeEmail(ctx, user, email any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeEmail", reflect.TypeOf((*MockUserService)(nil).ChangeEmail), ctx, user, password)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangeEmail", reflect.TypeOf((*MockUserService)(nil).ChangeEmail), ctx, user, email)
+}
+
+// ChangePassword mocks base method.
+func (m *MockUserService) ChangePassword(ctx context.Context, user *domain.User, password string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ChangePassword", ctx, user, password)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ChangePassword indicates an expected call of ChangePassword.
+func (mr *MockUserServiceMockRecorder) ChangePassword(ctx, user, password any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChangePassword", reflect.TypeOf((*MockUserService)(nil).ChangePassword), ctx, user, password)
 }
 
 // ChangeUsername mocks base method.
