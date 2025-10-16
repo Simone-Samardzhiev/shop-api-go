@@ -11,15 +11,17 @@ import (
 
 // AdminService implements port.AdminService interface and provides access to admin-related business logic.
 type AdminService struct {
-	userRepository port.UserRepository
-	passwordHasher port.PasswordHasher
+	userRepository  port.UserRepository
+	tokenRepository port.TokenRepository
+	passwordHasher  port.PasswordHasher
 }
 
 // NewAdminService creates a new AdminService instance.
-func NewAdminService(userRepository port.UserRepository, passwordHasher port.PasswordHasher) *AdminService {
+func NewAdminService(userRepository port.UserRepository, tokenRepository port.TokenRepository, passwordHasher port.PasswordHasher) *AdminService {
 	return &AdminService{
-		userRepository: userRepository,
-		passwordHasher: passwordHasher,
+		userRepository:  userRepository,
+		tokenRepository: tokenRepository,
+		passwordHasher:  passwordHasher,
 	}
 }
 
@@ -131,6 +133,10 @@ func (s *AdminService) UpdateUser(ctx context.Context, token *domain.Token, upda
 	}
 
 	if err := s.userRepository.UpdateUser(ctx, update); err != nil {
+		return err
+	}
+
+	if err := s.tokenRepository.DeleteAllTokensByUserId(ctx, token.UserId); err != nil {
 		return err
 	}
 
