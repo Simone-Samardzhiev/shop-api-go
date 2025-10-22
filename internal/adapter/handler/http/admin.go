@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 // AdminHandler represent HTTP handler for admin-related requests.
@@ -81,24 +82,30 @@ func (h *AdminHandler) UpdateUser(c *gin.Context) {
 		response.HandleError(c, domain.ErrInternalServerError)
 		return
 	}
-
 	domainToken, ok := token.(*domain.Token)
 	if !ok {
 		response.HandleError(c, domain.ErrInternalServerError)
 		return
 	}
 
+	id := c.Param("id")
+	parsedId, err := uuid.Parse(id)
+	if err != nil {
+		response.HandleError(c, domain.ErrInvalidParam)
+		return
+	}
+
 	var req request.UpdateUser
-	if err := c.ShouldBindJSON(&req); err != nil {
+	if err = c.ShouldBindJSON(&req); err != nil {
 		response.HandleBindingError(c, err)
 		return
 	}
 
-	if err := h.adminService.
+	if err = h.adminService.
 		UpdateUser(
 			c,
 			domainToken,
-			domain.NewUserUpdate(req.Id, req.Username, req.Email, req.Password, req.Role),
+			domain.NewUserUpdate(parsedId, req.Username, req.Email, req.Password, req.Role),
 		); err != nil {
 		response.HandleError(c, err)
 		return

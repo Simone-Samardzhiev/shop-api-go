@@ -23,6 +23,8 @@ var (
 	ErrLimitNotSet = errors.New("limit not set")
 	// ErrInvalidCursorFormat is an error for when cursor format is unexpected.
 	ErrInvalidCursorFormat = errors.New("invalid cursor format")
+	// ErrInvalidParam is an error for when passed param is not valid.
+	ErrInvalidParam = errors.New("invalid param")
 	// ErrInvalidToken is an error for when token parsing fails.
 	ErrInvalidToken = errors.New("invalid token")
 	// ErrInvalidTokenType is an error for when user use invalid token type.

@@ -55,7 +55,7 @@ func NewRouter(
 			adminUser := admin.Group("/users")
 			{
 				adminUser.GET("", adminHandler.GetUsers)
-				adminUser.PATCH("/update", adminHandler.UpdateUser)
+				adminUser.PATCH("/update/:id", adminHandler.UpdateUser)
 			}
 		}
 

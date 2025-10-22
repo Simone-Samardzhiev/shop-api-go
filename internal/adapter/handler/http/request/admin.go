@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 )
 
+// GetUserQuery represents query parameters for fetching user.
 type GetUserQuery struct {
 	Id       *uuid.UUID       `form:"id"`
 	Username *string          `form:"username"`
@@ -16,8 +17,8 @@ type GetUserQuery struct {
 	Limit    *int             `form:"limit" binding:"omitempty,min=1"`
 }
 
+// UpdateUser represents update user request body.
 type UpdateUser struct {
-	Id       uuid.UUID        `json:"id" binding:"required"`
 	Username *string          `json:"username" binding:"omitempty,min_bytes=8,max_bytes=255"`
 	Email    *string          `json:"email" binding:"omitempty,min_bytes=8,max_bytes=255"`
 	Password *string          `json:"password" binding:"omitempty,password"`

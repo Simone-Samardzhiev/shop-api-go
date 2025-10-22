@@ -1,13 +1,13 @@
 package request
 
-// RegisterRequest represents a register request.
+// RegisterRequest represents a register request body.
 type RegisterRequest struct {
 	Email    string `json:"email" binding:"required,email,min_bytes=8,max_bytes=255"`
 	Username string `json:"username" binding:"required,min_bytes=8,max_bytes=255"`
 	Password string `json:"password" binding:"required,password"`
 }
 
-// UpdateAccountRequest represents a update to user's account.
+// UpdateAccountRequest represents a for update to user's account request body.
 type UpdateAccountRequest struct {
 	Username    string  `json:"username" binding:"required"`
 	Password    string  `json:"password" binding:"required"`
