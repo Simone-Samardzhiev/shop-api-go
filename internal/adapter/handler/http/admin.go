@@ -1,6 +1,7 @@
 package http
 
 import (
+	"encoding/base64"
 	"net/http"
 	"shop-api-go/internal/core/domain"
 	"shop-api-go/internal/core/port"
@@ -22,9 +23,8 @@ func NewAdminHandler(userService port.AdminService) *AdminHandler {
 	}
 }
 
-// userInfoResponse contains users data that is safe to be shared.
-type userInfoResponse struct {
-	Id        uuid.UUID       `json:"id"`
+type userResponse struct {
+	ID        uuid.UUID       `json:"id"`
 	Username  string          `json:"username"`
 	Email     string          `json:"email"`
 	Role      domain.UserRole `json:"role"`
@@ -32,198 +32,98 @@ type userInfoResponse struct {
 	UpdatedAt time.Time       `json:"updated_at"`
 }
 
-// mapUsersToUserInfoResponse transforms a slice of domain.User to a slice of userInfoResponse.
-func mapUsersToUserInfoResponse(users []domain.User) []userInfoResponse {
-	usersResponse := make([]userInfoResponse, len(users))
-	for i, user := range users {
-		usersResponse[i] = userInfoResponse{
-			Id:        user.Id,
+type getUserResponse struct {
+	Users  []userResponse `json:"users"`
+	Cursor *string        `json:"cursor"`
+}
+
+func newGetUsersResponse(result *domain.UsersResult) *getUserResponse {
+	users := make([]userResponse, 0, len(result.Users))
+	for _, user := range result.Users {
+		users = append(users, userResponse{
+			ID:        user.Id,
 			Username:  user.Username,
 			Email:     user.Email,
 			Role:      user.Role,
 			CreatedAt: user.CreatedAt,
 			UpdatedAt: user.UpdatedAt,
+		})
+	}
+
+	if result.Cursor != nil {
+		encodedCursor := base64.URLEncoding.EncodeToString([]byte(*result.Cursor))
+		result.Cursor = &encodedCursor
+	}
+
+	return &getUserResponse{
+		Users:  users,
+		Cursor: result.Cursor,
+	}
+}
+
+type getUsersQueryParams struct {
+	Id       *uuid.UUID       `form:"id"`
+	Username *string          `form:"username"`
+	Email    *string          `form:"email"`
+	Role     *domain.UserRole `form:"role" binding:"omitempty,user_role"`
+	Page     *int             `form:"page" binding:"omitempty,min=1"`
+	Cursor   *string          `form:"cursor"`
+	Limit    *int             `form:"limit" binding:"omitempty,min=1"`
+}
+
+func (h *AdminHandler) GetUsers(c *gin.Context) {
+	token, ok := c.Get("token")
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+
+	domainToken, ok := token.(*domain.Token)
+	if !ok {
+		handleError(c, domain.ErrInternalServerError)
+		return
+	}
+
+	query := getUsersQueryParams{}
+	if err := c.BindQuery(&query); err != nil {
+		handleBindingError(c, err)
+		return
+	}
+
+	var after *time.Time
+	if query.Cursor != nil {
+		if *query.Cursor == "" {
+			after = &time.Time{}
+		} else {
+			decoded, err := base64.URLEncoding.DecodeString(*query.Cursor)
+			if err != nil {
+				handleError(c, domain.ErrInvalidCursorFormat)
+				return
+			}
+			parsedTime, err := time.Parse(time.RFC3339Nano, string(decoded))
+			if err != nil {
+				handleError(c, domain.ErrInvalidCursorFormat)
+				return
+			}
+			after = &parsedTime
 		}
 	}
-	return usersResponse
-}
 
-// usersByOffestPaginationRequest represents metadata for user offest pagination.
-type usersByOffestPaginationRequest struct {
-	Limit int `json:"limit" binding:"min=1"`
-	Page  int `json:"page" binding:"min=1"`
-}
-
-func (h *AdminHandler) GetUsersByOffsetPagination(c *gin.Context) {
-	token, ok := c.Get("token")
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-		return
-	}
-
-	domainToken, ok := token.(*domain.Token)
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-	}
-
-	var req usersByOffestPaginationRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handleBindingError(c, err)
-		return
-	}
-
-	users, err := h.adminService.GetUsersByOffestPagination(c, domainToken, req.Page, req.Limit)
+	response, err := h.adminService.GetUsers(
+		c,
+		domainToken,
+		domain.NewGetUsers(
+			query.Id, query.Username, query.Email, query.Role, query.Page, after, query.Limit,
+		),
+	)
 	if err != nil {
 		handleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, mapUsersToUserInfoResponse(users))
+	c.JSON(http.StatusOK, newGetUsersResponse(response))
 }
 
-// usersByTimePaginationRequest represents metadata for user time pagination.
-type usersByTimePaginationRequest struct {
-	After time.Time `json:"after"`
-	Limit int       `json:"limit" binding:"min=1"`
-}
-
-func (h *AdminHandler) GetUsersByTimePagination(c *gin.Context) {
-	token, ok := c.Get("token")
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-		return
-	}
-	domainToken, ok := token.(*domain.Token)
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-		return
-	}
-
-	var req usersByTimePaginationRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handleBindingError(c, err)
-		return
-	}
-
-	users, err := h.adminService.GetUsersByTimePagination(c, domainToken, req.After, req.Limit)
-	if err != nil {
-		handleError(c, err)
-		return
-	}
-
-	userInfo := mapUsersToUserInfoResponse(users)
-	if len(userInfo) != 0 {
-		cursor := userInfo[len(userInfo)-1].UpdatedAt
-		c.JSON(http.StatusOK, gin.H{
-			"users":  userInfo,
-			"cursor": cursor,
-		})
-		return
-	}
-
-	c.JSON(http.StatusOK, gin.H{
-		"users":  userInfo,
-		"cursor": nil,
-	})
-}
-
-// searchUserRequest represents a request body for searching a user by username.
-type searchUserRequest struct {
-	Username string `json:"username" binding:"required"`
-	Limit    int    `json:"limit" binding:"min=1"`
-}
-
-func (h *AdminHandler) SearchUserByUsername(c *gin.Context) {
-	token, ok := c.Get("token")
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-		return
-	}
-	domainToken, ok := token.(*domain.Token)
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-		return
-	}
-
-	var req searchUserRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handleBindingError(c, err)
-	}
-
-	users, err := h.adminService.SearchUserByUsername(c, domainToken, req.Username, req.Limit)
-	if err != nil {
-		handleError(c, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, mapUsersToUserInfoResponse(users))
-}
-
-// searchUserByEmailRequest represents a request body for searching a user by email.
-type searchUserByEmailRequest struct {
-	Email string `json:"email" binding:"required"`
-	Limit int    `json:"limit" binding:"min=1"`
-}
-
-func (h *AdminHandler) SearchUserByEmail(c *gin.Context) {
-	token, ok := c.Get("token")
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-		return
-	}
-	domainToken, ok := token.(*domain.Token)
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-		return
-	}
-
-	var req searchUserByEmailRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handleBindingError(c, err)
-		return
-	}
-
-	users, err := h.adminService.SearchUserByEmail(c, domainToken, req.Email, req.Limit)
-	if err != nil {
-		handleError(c, err)
-		return
-	}
-
-	c.JSON(http.StatusOK, mapUsersToUserInfoResponse(users))
-}
-
-// getUserByIdRequest represents a request body for getting a user by id.
-type getUserByIdRequest struct {
-	Id uuid.UUID `json:"id" binding:"required"`
-}
-
-func (h *AdminHandler) GetUserById(c *gin.Context) {
-	token, ok := c.Get("token")
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-		return
-	}
-
-	domainToken, ok := token.(*domain.Token)
-	if !ok {
-		handleError(c, domain.ErrInternalServerError)
-		return
-	}
-
-	var req getUserByIdRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handleBindingError(c, err)
-	}
-
-	user, err := h.adminService.GetUserById(c, domainToken, req.Id)
-	if err != nil {
-		handleError(c, err)
-		return
-	}
-	c.JSON(http.StatusOK, user)
-}
-
-// updateUserRequest represent a request body for updating user field.
 type updateUserRequest struct {
 	Id       uuid.UUID        `json:"id" binding:"required"`
 	Username *string          `json:"username" binding:"omitempty,min_bytes=8,max_bytes=255"`

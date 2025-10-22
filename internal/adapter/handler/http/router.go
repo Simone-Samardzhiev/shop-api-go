@@ -45,9 +45,7 @@ func NewRouter(
 		user := v1.Group("/users")
 		{
 			user.POST("/register", userHandler.Register)
-			user.PATCH("/me/change-username", userHandler.ChangeUsername)
-			user.PATCH("/me/change-email", userHandler.ChangeEmail)
-			user.PATCH("/me/change-password", userHandler.ChangePassword)
+			user.PATCH("/me/update", userHandler.UpdateAccount)
 		}
 
 		admin := v1.Group("/admin")
@@ -55,11 +53,7 @@ func NewRouter(
 		{
 			adminUser := admin.Group("/users")
 			{
-				adminUser.GET("/pagination-by-offset", adminHandler.GetUsersByOffsetPagination)
-				adminUser.GET("/pagination-by-time", adminHandler.GetUsersByTimePagination)
-				adminUser.GET("/search/by-username", adminHandler.SearchUserByUsername)
-				adminUser.GET("/search/by-email", adminHandler.SearchUserByEmail)
-				adminUser.GET("/by-id", adminHandler.GetUserById)
+				adminUser.GET("", adminHandler.GetUsers)
 				adminUser.PATCH("/update", adminHandler.UpdateUser)
 			}
 		}

@@ -59,7 +59,7 @@ func main() {
 
 	userService := service.NewUserService(userRepository, passwordHasher, tokenRepository)
 	authService := service.NewAuthService(jwtTokenGenerator, passwordHasher, tokenRepository, userRepository)
-	adminService := service.NewAdminService(userRepository, passwordHasher)
+	adminService := service.NewAdminService(userRepository, tokenRepository, passwordHasher)
 
 	userHandler := http.NewUserHandler(userService)
 	adminHandler := http.NewAdminHandler(adminService)

@@ -13,9 +13,7 @@ import (
 	context "context"
 	reflect "reflect"
 	domain "shop-api-go/internal/core/domain"
-	time "time"
 
-	uuid "github.com/google/uuid"
 	gomock "go.uber.org/mock/gomock"
 )
 
@@ -43,133 +41,31 @@ func (m *MockAdminService) EXPECT() *MockAdminServiceMockRecorder {
 	return m.recorder
 }
 
-// GetUserById mocks base method.
-func (m *MockAdminService) GetUserById(ctx context.Context, token *domain.Token, id uuid.UUID) (*domain.User, error) {
+// GetUsers mocks base method.
+func (m *MockAdminService) GetUsers(ctx context.Context, token *domain.Token, get *domain.GetUsers) (*domain.UsersResult, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUserById", ctx, token, id)
-	ret0, _ := ret[0].(*domain.User)
+	ret := m.ctrl.Call(m, "GetUsers", ctx, token, get)
+	ret0, _ := ret[0].(*domain.UsersResult)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetUserById indicates an expected call of GetUserById.
-func (mr *MockAdminServiceMockRecorder) GetUserById(ctx, token, id any) *gomock.Call {
+// GetUsers indicates an expected call of GetUsers.
+func (mr *MockAdminServiceMockRecorder) GetUsers(ctx, token, get any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUserById", reflect.TypeOf((*MockAdminService)(nil).GetUserById), ctx, token, id)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsers", reflect.TypeOf((*MockAdminService)(nil).GetUsers), ctx, token, get)
 }
 
-// GetUsersByOffestPagination mocks base method.
-func (m *MockAdminService) GetUsersByOffestPagination(ctx context.Context, token *domain.Token, page, limit int) ([]domain.User, error) {
+// UpdateUser mocks base method.
+func (m *MockAdminService) UpdateUser(ctx context.Context, token *domain.Token, update *domain.UserUpdate) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUsersByOffestPagination", ctx, token, page, limit)
-	ret0, _ := ret[0].([]domain.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUsersByOffestPagination indicates an expected call of GetUsersByOffestPagination.
-func (mr *MockAdminServiceMockRecorder) GetUsersByOffestPagination(ctx, token, page, limit any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByOffestPagination", reflect.TypeOf((*MockAdminService)(nil).GetUsersByOffestPagination), ctx, token, page, limit)
-}
-
-// GetUsersByTimePagination mocks base method.
-func (m *MockAdminService) GetUsersByTimePagination(ctx context.Context, token *domain.Token, after time.Time, limit int) ([]domain.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetUsersByTimePagination", ctx, token, after, limit)
-	ret0, _ := ret[0].([]domain.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// GetUsersByTimePagination indicates an expected call of GetUsersByTimePagination.
-func (mr *MockAdminServiceMockRecorder) GetUsersByTimePagination(ctx, token, after, limit any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetUsersByTimePagination", reflect.TypeOf((*MockAdminService)(nil).GetUsersByTimePagination), ctx, token, after, limit)
-}
-
-// SearchUserByEmail mocks base method.
-func (m *MockAdminService) SearchUserByEmail(ctx context.Context, token *domain.Token, email string, limit int) ([]domain.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SearchUserByEmail", ctx, token, email, limit)
-	ret0, _ := ret[0].([]domain.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SearchUserByEmail indicates an expected call of SearchUserByEmail.
-func (mr *MockAdminServiceMockRecorder) SearchUserByEmail(ctx, token, email, limit any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUserByEmail", reflect.TypeOf((*MockAdminService)(nil).SearchUserByEmail), ctx, token, email, limit)
-}
-
-// SearchUserByUsername mocks base method.
-func (m *MockAdminService) SearchUserByUsername(ctx context.Context, token *domain.Token, username string, limit int) ([]domain.User, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "SearchUserByUsername", ctx, token, username, limit)
-	ret0, _ := ret[0].([]domain.User)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// SearchUserByUsername indicates an expected call of SearchUserByUsername.
-func (mr *MockAdminServiceMockRecorder) SearchUserByUsername(ctx, token, username, limit any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SearchUserByUsername", reflect.TypeOf((*MockAdminService)(nil).SearchUserByUsername), ctx, token, username, limit)
-}
-
-// UpdateEmail mocks base method.
-func (m *MockAdminService) UpdateEmail(ctx context.Context, token *domain.Token, id uuid.UUID, email string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateEmail", ctx, token, id, email)
+	ret := m.ctrl.Call(m, "UpdateUser", ctx, token, update)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// UpdateEmail indicates an expected call of UpdateEmail.
-func (mr *MockAdminServiceMockRecorder) UpdateEmail(ctx, token, id, email any) *gomock.Call {
+// UpdateUser indicates an expected call of UpdateUser.
+func (mr *MockAdminServiceMockRecorder) UpdateUser(ctx, token, update any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateEmail", reflect.TypeOf((*MockAdminService)(nil).UpdateEmail), ctx, token, id, email)
-}
-
-// UpdatePassword mocks base method.
-func (m *MockAdminService) UpdatePassword(ctx context.Context, token *domain.Token, id uuid.UUID, password string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdatePassword", ctx, token, id, password)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdatePassword indicates an expected call of UpdatePassword.
-func (mr *MockAdminServiceMockRecorder) UpdatePassword(ctx, token, id, password any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdatePassword", reflect.TypeOf((*MockAdminService)(nil).UpdatePassword), ctx, token, id, password)
-}
-
-// UpdateRole mocks base method.
-func (m *MockAdminService) UpdateRole(ctx context.Context, token *domain.Token, id uuid.UUID, role domain.UserRole) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateRole", ctx, token, id, role)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateRole indicates an expected call of UpdateRole.
-func (mr *MockAdminServiceMockRecorder) UpdateRole(ctx, token, id, role any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateRole", reflect.TypeOf((*MockAdminService)(nil).UpdateRole), ctx, token, id, role)
-}
-
-// UpdateUsername mocks base method.
-func (m *MockAdminService) UpdateUsername(ctx context.Context, token *domain.Token, id uuid.UUID, username string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "UpdateUsername", ctx, token, id, username)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// UpdateUsername indicates an expected call of UpdateUsername.
-func (mr *MockAdminServiceMockRecorder) UpdateUsername(ctx, token, id, username any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUsername", reflect.TypeOf((*MockAdminService)(nil).UpdateUsername), ctx, token, id, username)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateUser", reflect.TypeOf((*MockAdminService)(nil).UpdateUser), ctx, token, update)
 }

@@ -5,8 +5,6 @@ import (
 	"shop-api-go/internal/core/domain"
 	"shop-api-go/internal/core/port"
 	"time"
-
-	"github.com/google/uuid"
 )
 
 // AdminService implements port.AdminService interface and provides access to admin-related business logic.
@@ -25,79 +23,60 @@ func NewAdminService(userRepository port.UserRepository, tokenRepository port.To
 	}
 }
 
-func (s *AdminService) GetUsersByOffestPagination(ctx context.Context, token *domain.Token, page, limit int) ([]domain.User, error) {
+func (s *AdminService) GetUsers(ctx context.Context, token *domain.Token, get *domain.GetUsers) (*domain.UsersResult, error) {
 	if token.TokenType != domain.AccessToken {
 		return nil, domain.ErrInvalidTokenType
 	}
 	if token.UserRole != domain.Admin {
 		return nil, domain.ErrInvalidTokenRole
 	}
-
-	users, err := s.userRepository.GetUsersByOffestPagination(ctx, page, limit)
-	if err != nil {
-		return nil, err
-	}
-	return users, nil
-}
-
-func (s *AdminService) GetUsersByTimePagination(ctx context.Context, token *domain.Token, after time.Time, limit int) ([]domain.User, error) {
-	if token.TokenType != domain.AccessToken {
-		return nil, domain.ErrInvalidTokenType
-	}
-	if token.UserRole != domain.Admin {
-		return nil, domain.ErrInvalidTokenRole
+	if get.Id == nil && get.Limit == nil {
+		return nil, domain.ErrLimitNotSet
 	}
 
-	users, err := s.userRepository.GetUsersByTimePagination(ctx, after, limit)
-	if err != nil {
-		return nil, err
-	}
-	return users, nil
-}
+	switch {
+	case get.Id != nil:
+		user, err := s.userRepository.GetUserById(ctx, *get.Id)
+		if err != nil {
+			return nil, err
+		}
 
-func (s *AdminService) SearchUserByUsername(ctx context.Context, token *domain.Token, username string, limit int) ([]domain.User, error) {
-	if token.TokenType != domain.AccessToken {
-		return nil, domain.ErrInvalidTokenType
-	}
-	if token.UserRole != domain.Admin {
-		return nil, domain.ErrInvalidTokenRole
-	}
+		return domain.NewUsersResult([]domain.User{*user}, nil), nil
+	case get.Username != nil:
+		users, err := s.userRepository.SearchUserByUsername(ctx, *get.Username, *get.Limit, get.Role)
+		if err != nil {
+			return nil, err
+		}
 
-	users, err := s.userRepository.SearchUserByUsername(ctx, username, limit)
-	if err != nil {
-		return nil, err
-	}
-	return users, nil
-}
+		return domain.NewUsersResult(users, nil), nil
+	case get.Email != nil:
+		users, err := s.userRepository.SearchUserByEmail(ctx, *get.Email, *get.Limit, get.Role)
+		if err != nil {
+			return nil, err
+		}
 
-func (s *AdminService) SearchUserByEmail(ctx context.Context, token *domain.Token, email string, limit int) ([]domain.User, error) {
-	if token.TokenType != domain.AccessToken {
-		return nil, domain.ErrInvalidTokenType
-	}
-	if token.UserRole != domain.Admin {
-		return nil, domain.ErrInvalidTokenRole
-	}
+		return domain.NewUsersResult(users, nil), nil
+	case get.Page != nil:
+		users, err := s.userRepository.GetUsersByOffestPagination(ctx, *get.Page, *get.Limit, get.Role)
+		if err != nil {
+			return nil, err
+		}
 
-	users, err := s.userRepository.SearchUserByEmail(ctx, email, limit)
-	if err != nil {
-		return nil, err
-	}
-	return users, nil
-}
+		return domain.NewUsersResult(users, nil), nil
+	case get.After != nil:
+		users, err := s.userRepository.GetUsersByTimePagination(ctx, *get.After, *get.Limit, get.Role)
+		if err != nil {
+			return nil, err
+		}
 
-func (s *AdminService) GetUserById(ctx context.Context, token *domain.Token, id uuid.UUID) (*domain.User, error) {
-	if token.TokenType != domain.AccessToken {
-		return nil, domain.ErrInvalidTokenType
+		var cursor string
+		if len(users) > 0 {
+			cursor = users[len(users)-1].CreatedAt.Format(time.RFC3339Nano)
+		}
+		return domain.NewUsersResult(users, &cursor), err
+	default:
+		return nil, domain.ErrInvalidQuery
 	}
-	if token.UserRole != domain.Admin {
-		return nil, domain.ErrInvalidTokenRole
-	}
-
-	user, err := s.userRepository.GetUserById(ctx, id)
-	if err != nil {
-		return nil, err
-	}
-	return user, nil
 }
 
 func (s *AdminService) UpdateUser(ctx context.Context, token *domain.Token, update *domain.UserUpdate) error {
@@ -129,7 +108,7 @@ func (s *AdminService) UpdateUser(ctx context.Context, token *domain.Token, upda
 	}
 
 	if !hasFieldToUpdate {
-		return domain.ErrNoUserFieldsToUpdate
+		return domain.ErrNoFieldsToUpdate
 	}
 
 	if err := s.userRepository.UpdateUser(ctx, update); err != nil {

@@ -42,6 +42,23 @@ var errMap = map[error]errorResponse{
 		code:       "USER_NOT_FOUND",
 		messages:   []string{"User not found."},
 		statusCode: http.StatusNotFound,
+	}, domain.ErrNoFieldsToUpdate: {
+		code:       "NO_FIELDS_TO_UPDATE",
+		messages:   []string{"No fields to update."},
+		statusCode: http.StatusBadRequest,
+	}, domain.ErrInvalidQuery: {
+		code:       "INVALID_QUERY",
+		messages:   []string{"Invalid query."},
+		statusCode: http.StatusBadRequest,
+	}, domain.ErrInvalidCursorFormat: {
+		code:       "INVALID_CURSOR_FORMAT",
+		messages:   []string{"Invalid cursor format."},
+		statusCode: http.StatusBadRequest,
+	},
+	domain.ErrLimitNotSet: {
+		code:       "LIMIT_NOT_SET",
+		messages:   []string{"Please provide a limit when fetching a list of objects."},
+		statusCode: http.StatusBadRequest,
 	},
 	domain.ErrInvalidToken: {
 		code:       "INVALID_TOKEN",
@@ -51,11 +68,11 @@ var errMap = map[error]errorResponse{
 	domain.ErrInvalidTokenType: {
 		code:       "INVALID_TOKEN_TYPE",
 		messages:   []string{"Token type is invalid."},
-		statusCode: http.StatusUnauthorized,
+		statusCode: http.StatusForbidden,
 	}, domain.ErrInvalidTokenRole: {
 		code:       "INVALID_TOKEN_ROLE",
 		messages:   []string{"Token role is invalid."},
-		statusCode: http.StatusUnauthorized,
+		statusCode: http.StatusForbidden,
 	},
 	domain.ErrMalformedToken: {
 		code:       "MALFORMED_TOKEN",

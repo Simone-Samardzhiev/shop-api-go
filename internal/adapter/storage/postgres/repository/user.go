@@ -88,12 +88,39 @@ func (r *UserRepository) GetUserByUsername(ctx context.Context, username string)
 	return &user, nil
 }
 
-func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, limit int) ([]domain.User, error) {
+func (r *UserRepository) GetUserById(ctx context.Context, id uuid.UUID) (*domain.User, error) {
+	row := r.db.QueryRowContext(
+		ctx,
+		`SELECT id, username, email, role, created_at, updated_at 
+		FROM users
+		WHERE id = $1`,
+		id)
+
+	var user domain.User
+	err := row.Scan(&user.Id, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
+
+	if errors.Is(err, sql.ErrNoRows) {
+		return nil, domain.ErrUserNotFound
+	} else if err != nil {
+		zap.L().
+			Error(
+				"postgres/UserRepository.GetUserById failed",
+				zap.String("id", id.String()),
+				zap.Error(err),
+			)
+		return nil, domain.ErrInternalServerError
+	}
+	return &user, nil
+}
+
+func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, limit int, role *domain.UserRole) ([]domain.User, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
 		`SELECT id, username, email, role, created_at, updated_at 
 		FROM users
-		OFFSET $1 LIMIT $2`,
+		WHERE $1::user_role_enum IS NULL OR $1::user_role_enum = role
+		OFFSET $2 LIMIT $3`,
+		role,
 		(page-1)*limit,
 		limit,
 	)
@@ -138,14 +165,16 @@ func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, l
 	return users, nil
 }
 
-func (r *UserRepository) GetUsersByTimePagination(ctx context.Context, after time.Time, limit int) ([]domain.User, error) {
+func (r *UserRepository) GetUsersByTimePagination(ctx context.Context, after time.Time, limit int, role *domain.UserRole) ([]domain.User, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
 		`SELECT id, username, email, role, created_at, updated_at FROM users
-		WHERE created_at > $1
+		WHERE created_at > $1 AND ($2::user_role_enum IS NULL OR $2::user_role_enum = role)
 		ORDER BY created_at
-		LIMIT $2`,
-		after, limit,
+		LIMIT $3`,
+		after,
+		role,
+		limit,
 	)
 
 	if err != nil {
@@ -188,14 +217,15 @@ func (r *UserRepository) GetUsersByTimePagination(ctx context.Context, after tim
 	return users, nil
 }
 
-func (r *UserRepository) SearchUserByUsername(ctx context.Context, username string, limit int) ([]domain.User, error) {
+func (r *UserRepository) SearchUserByUsername(ctx context.Context, username string, limit int, role *domain.UserRole) ([]domain.User, error) {
 	rows, err := r.db.QueryContext(
 		ctx,
 		`SELECT id, username, email, role, created_at, updated_at FROM users
-		WHERE username % $1
+		WHERE username % $1 AND ($2::user_role_enum IS NULL OR $2::user_role_enum = role)
 		ORDER BY similarity(username, $1) DESC
-		LIMIT $2`,
+		LIMIT $3`,
 		username,
+		role,
 		limit,
 	)
 
@@ -239,14 +269,16 @@ func (r *UserRepository) SearchUserByUsername(ctx context.Context, username stri
 	return users, nil
 }
 
-func (r *UserRepository) SearchUserByEmail(ctx context.Context, email string, limit int) ([]domain.User, error) {
+func (r *UserRepository) SearchUserByEmail(ctx context.Context, email string, limit int, role *domain.UserRole) ([]domain.User, error) {
+
 	rows, err := r.db.QueryContext(
 		ctx,
 		`SELECT id, username, email, role, created_at, updated_at FROM users
-		WHERE similarity(email, $1) > 0.6
+		WHERE similarity(email, $1) > 0.6 AND ($2::user_role_enum IS NULL OR $2::user_role_enum = role)
 		ORDER BY similarity(email, $1) DESC
-		limit $2`,
+		limit $3`,
 		email,
+		role,
 		limit,
 	)
 
@@ -291,30 +323,6 @@ func (r *UserRepository) SearchUserByEmail(ctx context.Context, email string, li
 	return users, nil
 }
 
-func (r *UserRepository) GetUserById(ctx context.Context, id uuid.UUID) (*domain.User, error) {
-	row := r.db.QueryRowContext(
-		ctx,
-		`SELECT id, username, email, role, created_at, updated_at 
-		FROM users WHERE id = $1`,
-		id)
-
-	var user domain.User
-	err := row.Scan(&user.Id, &user.Username, &user.Email, &user.Role, &user.CreatedAt, &user.UpdatedAt)
-
-	if errors.Is(err, sql.ErrNoRows) {
-		return nil, domain.ErrUserNotFound
-	} else if err != nil {
-		zap.L().
-			Error(
-				"postgres/UserRepository.GetUserById failed",
-				zap.String("id", id.String()),
-				zap.Error(err),
-			)
-		return nil, domain.ErrInternalServerError
-	}
-	return &user, nil
-}
-
 func (r *UserRepository) UpdateUser(ctx context.Context, update *domain.UserUpdate) error {
 	result, err := r.db.ExecContext(
 		ctx,
@@ -332,7 +340,15 @@ func (r *UserRepository) UpdateUser(ctx context.Context, update *domain.UserUpda
 		update.Id,
 	)
 
-	if err != nil {
+	var pqErr *pq.Error
+	if errors.As(err, &pqErr) && pqErr.Code == "23505" {
+		switch {
+		case pqErr.Constraint == "users_username_key":
+			return domain.ErrUsernameAlreadyInUse
+		case pqErr.Constraint == "users_email_key":
+			return domain.ErrEmailAlreadyInUse
+		}
+	} else if err != nil {
 		zapFields := make([]zap.Field, 0, 3)
 		if update.Username != nil {
 			zapFields = append(zapFields, zap.String("username", *update.Username))
@@ -357,160 +373,6 @@ func (r *UserRepository) UpdateUser(ctx context.Context, update *domain.UserUpda
 		zap.L().
 			Error(
 				"postgres/UserRepository.UpdateUser failed getting rows affected",
-				zap.Error(err),
-			)
-		return domain.ErrInternalServerError
-	}
-
-	if rowsAffected == 0 {
-		return domain.ErrUserNotFound
-	}
-	return nil
-}
-
-func (r *UserRepository) UpdateUsername(ctx context.Context, id uuid.UUID, username string) error {
-	result, err := r.db.ExecContext(
-		ctx,
-		`UPDATE users 
-		SET username = $1, updated_at = now()
-		WHERE id = $2`,
-		username,
-		id,
-	)
-
-	if err != nil {
-		var pqErr *pq.Error
-		if errors.As(err, &pqErr) {
-			return domain.ErrUsernameAlreadyInUse
-		}
-
-		zap.L().
-			Error(
-				"postgres/UserRepository.UpdateUsername failed",
-				zap.String("id", id.String()),
-				zap.String("username", username),
-				zap.Error(err),
-			)
-		return domain.ErrInternalServerError
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		zap.L().
-			Error(
-				"postgres/UserRepository.UpdateUsername failed getting rows affected",
-				zap.Error(err),
-			)
-		return domain.ErrInternalServerError
-	}
-
-	if rowsAffected == 0 {
-		return domain.ErrUserNotFound
-	}
-
-	return nil
-}
-
-func (r *UserRepository) UpdateEmail(ctx context.Context, id uuid.UUID, email string) error {
-	result, err := r.db.ExecContext(
-		ctx,
-		`UPDATE users
-		SET email = $1, updated_at = now() 
-		WHERE id = $2`,
-		email,
-		id,
-	)
-	if err != nil {
-		var pqErr *pq.Error
-		if errors.As(err, &pqErr) {
-			return domain.ErrEmailAlreadyInUse
-		}
-
-		zap.L().
-			Error(
-				"postgres/UserRepository.UpdateEmail failed",
-				zap.String("id", id.String()),
-				zap.String("email", email),
-				zap.Error(err),
-			)
-		return domain.ErrInternalServerError
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		zap.L().
-			Error(
-				"postgres/UserRepository.UpdateEmail failed getting affected rows",
-				zap.Error(err),
-			)
-		return domain.ErrInternalServerError
-	}
-	if rowsAffected == 0 {
-		return domain.ErrUserNotFound
-	}
-
-	return nil
-}
-
-func (r *UserRepository) UpdatePassword(ctx context.Context, id uuid.UUID, password string) error {
-	result, err := r.db.ExecContext(
-		ctx,
-		`UPDATE users
-		SET password = $1, updated_at = now() 
-		WHERE id = $2`,
-		password,
-		id,
-	)
-	if err != nil {
-		zap.L().
-			Error(
-				"postgres/UserRepository.UpdatePassword failed",
-				zap.String("id", id.String()),
-				zap.Error(err),
-			)
-		return domain.ErrInternalServerError
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		zap.L().
-			Error(
-				"postgres/UserRepository.UpdatePassword getting rows affected",
-				zap.Error(err),
-			)
-		return domain.ErrInternalServerError
-	}
-	if rowsAffected == 0 {
-		return domain.ErrUserNotFound
-	}
-
-	return nil
-}
-
-func (r *UserRepository) UpdateRole(ctx context.Context, id uuid.UUID, role domain.UserRole) error {
-	result, err := r.db.ExecContext(
-		ctx,
-		`UPDATE users SET role = $1, updated_at = now()
-		WHERE id = $2`,
-		role,
-		id,
-	)
-
-	if err != nil {
-		zap.L().Error(
-			"postgres/UserRepository.UpdateRole failed",
-			zap.String("id", id.String()),
-			zap.String("role", string(role)),
-			zap.Error(err),
-		)
-		return domain.ErrInternalServerError
-	}
-
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		zap.L().
-			Error(
-				"postgres/UserRepository.UpdateRole failed getting rows affected",
 				zap.Error(err),
 			)
 		return domain.ErrInternalServerError

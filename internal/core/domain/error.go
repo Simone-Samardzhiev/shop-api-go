@@ -15,8 +15,14 @@ var (
 	ErrWrongCredentials = errors.New("wrong credentials")
 	// ErrUserNotFound is an error for when user couldn't be found.
 	ErrUserNotFound = errors.New("user not found")
-	// ErrNoUserFieldsToUpdate is an error for when all user update fields are empty(nil)
-	ErrNoUserFieldsToUpdate = errors.New("no user fields to update")
+	// ErrNoFieldsToUpdate is an error for when all update fields are empty(nil)
+	ErrNoFieldsToUpdate = errors.New("no fields to update")
+	// ErrInvalidQuery is an error for when passed query for fetching is invalid.
+	ErrInvalidQuery = errors.New("invalid query")
+	// ErrLimitNotSet is an error for when fetching data requires limit to be set.
+	ErrLimitNotSet = errors.New("limit not set")
+	// ErrInvalidCursorFormat is an error for when cursor format is unexpected.
+	ErrInvalidCursorFormat = errors.New("invalid cursor format")
 	// ErrInvalidToken is an error for when token parsing fails.
 	ErrInvalidToken = errors.New("invalid token")
 	// ErrInvalidTokenType is an error for when user use invalid token type.

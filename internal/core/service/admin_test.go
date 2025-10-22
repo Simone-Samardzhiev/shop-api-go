@@ -13,13 +13,14 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestAdminService_GetUsersByOffestPagination(t *testing.T) {
+func TestAdminService_GetUsers(t *testing.T) {
 	tests := []struct {
-		name          string
-		token         *domain.Token
-		expectedUsers []domain.User
-		expectedError error
-		mockSetup     func(
+		name           string
+		token          *domain.Token
+		get            *domain.GetUsers
+		expectedError  error
+		expectedResult *domain.UsersResult
+		mockSetup      func(
 			mockUserRepository *mock.MockUserRepository,
 			mockTokenRepository *mock.MockTokenRepository,
 			mockPasswordHasher *mock.MockPasswordHasher,
@@ -31,483 +32,18 @@ func TestAdminService_GetUsersByOffestPagination(t *testing.T) {
 				TokenType: domain.AccessToken,
 				UserRole:  domain.Admin,
 			},
-			expectedUsers: []domain.User{
-				{
-					Username: "fetchedUser",
+			get: &domain.GetUsers{
+				Id: &uuid.UUID{},
+			},
+			expectedError: nil,
+			expectedResult: &domain.UsersResult{
+				Users: []domain.User{
+					{
+						Id:       uuid.UUID{},
+						Username: "fetchedUser",
+					},
 				},
 			},
-			expectedError: nil,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-				mockUserRepository.
-					EXPECT().
-					GetUsersByOffestPagination(
-						gomock.AssignableToTypeOf(
-							context.Background()),
-						gomock.AssignableToTypeOf(0),
-						gomock.AssignableToTypeOf(0)).
-					Return([]domain.User{{
-						Username: "fetchedUser",
-					}}, nil)
-			},
-		}, {
-			name: "error invalid token type",
-			token: &domain.Token{
-				TokenType: domain.RefreshToken,
-			},
-			expectedUsers: nil,
-			expectedError: domain.ErrInvalidTokenType,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-
-			},
-		}, {
-			name: "error invalid token role",
-			token: &domain.Token{
-				TokenType: domain.AccessToken,
-				UserRole:  domain.Client,
-			},
-			expectedUsers: nil,
-			expectedError: domain.ErrInvalidTokenRole,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-
-			},
-		}, {
-			name: "error fetching users",
-			token: &domain.Token{
-				TokenType: domain.AccessToken,
-				UserRole:  domain.Admin,
-			},
-			expectedUsers: nil,
-			expectedError: domain.ErrInternalServerError,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-				mockUserRepository.
-					EXPECT().
-					GetUsersByOffestPagination(
-						gomock.AssignableToTypeOf(
-							context.Background()),
-						gomock.AssignableToTypeOf(0),
-						gomock.AssignableToTypeOf(0)).
-					Return(nil, domain.ErrInternalServerError)
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			mockUserRepository := mock.NewMockUserRepository(ctrl)
-			mockTokenRepository := mock.NewMockTokenRepository(ctrl)
-			mockPasswordHasher := mock.NewMockPasswordHasher(ctrl)
-
-			tt.mockSetup(mockUserRepository, mockTokenRepository, mockPasswordHasher)
-
-			users, err := service.
-				NewAdminService(mockUserRepository, mockTokenRepository, mockPasswordHasher).
-				GetUsersByOffestPagination(
-					context.Background(),
-					tt.token,
-					0,
-					0,
-				)
-
-			if tt.expectedError != nil {
-				require.ErrorIs(t, err, tt.expectedError)
-			} else {
-				require.NoError(t, err)
-			}
-
-			require.Equal(t, tt.expectedUsers, users)
-		})
-	}
-}
-
-func TestAdminService_GetUsersByOffestPagination_Error(t *testing.T) {
-	tests := []struct {
-		name          string
-		token         *domain.Token
-		expectedUsers []domain.User
-		expectedError error
-		mockSetup     func(
-			mockUserRepository *mock.MockUserRepository,
-			mockTokenRepository *mock.MockTokenRepository,
-			mockPasswordHasher *mock.MockPasswordHasher,
-		)
-	}{
-		{
-			name: "success",
-			token: &domain.Token{
-				TokenType: domain.AccessToken,
-				UserRole:  domain.Admin,
-			},
-			expectedUsers: []domain.User{
-				{
-					Username: "fetchedUser",
-				},
-			},
-			expectedError: nil,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-				mockUserRepository.
-					EXPECT().
-					GetUsersByTimePagination(
-						gomock.AssignableToTypeOf(
-							context.Background()),
-						gomock.AssignableToTypeOf(time.Time{}),
-						gomock.AssignableToTypeOf(0)).
-					Return([]domain.User{{
-						Username: "fetchedUser",
-					}}, nil)
-			},
-		}, {
-			name: "error invalid token type",
-			token: &domain.Token{
-				TokenType: domain.RefreshToken,
-			},
-			expectedUsers: nil,
-			expectedError: domain.ErrInvalidTokenType,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-
-			},
-		}, {
-			name: "error invalid token role",
-			token: &domain.Token{
-				TokenType: domain.AccessToken,
-				UserRole:  domain.Client,
-			},
-			expectedUsers: nil,
-			expectedError: domain.ErrInvalidTokenRole,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-
-			},
-		}, {
-			name: "error fetching users",
-			token: &domain.Token{
-				TokenType: domain.AccessToken,
-				UserRole:  domain.Admin,
-			},
-			expectedUsers: nil,
-			expectedError: domain.ErrInternalServerError,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-				mockUserRepository.
-					EXPECT().
-					GetUsersByTimePagination(
-						gomock.AssignableToTypeOf(
-							context.Background()),
-						gomock.AssignableToTypeOf(time.Time{}),
-						gomock.AssignableToTypeOf(0)).
-					Return(nil, domain.ErrInternalServerError)
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			mockUserRepository := mock.NewMockUserRepository(ctrl)
-			mockTokenRepository := mock.NewMockTokenRepository(ctrl)
-			mockPasswordHasher := mock.NewMockPasswordHasher(ctrl)
-
-			tt.mockSetup(mockUserRepository, mockTokenRepository, mockPasswordHasher)
-			users, err := service.
-				NewAdminService(mockUserRepository, mockTokenRepository, mockPasswordHasher).
-				GetUsersByTimePagination(
-					context.Background(),
-					tt.token,
-					time.Time{},
-					0,
-				)
-
-			if tt.expectedError != nil {
-				require.ErrorIs(t, err, tt.expectedError)
-			} else {
-				require.NoError(t, err)
-			}
-
-			require.Equal(t, tt.expectedUsers, users)
-		})
-	}
-
-}
-
-func TestAdminService_SearchUserByUsername(t *testing.T) {
-	tests := []struct {
-		name          string
-		token         *domain.Token
-		expectedUsers []domain.User
-		expectedError error
-		mockSetup     func(
-			mockUserRepository *mock.MockUserRepository,
-			mockTokenRepository *mock.MockTokenRepository,
-			mockPasswordHasher *mock.MockPasswordHasher,
-		)
-	}{
-		{
-			name: "success",
-			token: &domain.Token{
-				TokenType: domain.AccessToken,
-				UserRole:  domain.Admin,
-			},
-			expectedUsers: []domain.User{
-				{
-					Username: "fetchedUser",
-				},
-			},
-			expectedError: nil,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-				mockUserRepository.
-					EXPECT().
-					SearchUserByUsername(
-						gomock.AssignableToTypeOf(context.Background()),
-						gomock.AssignableToTypeOf(""),
-						gomock.AssignableToTypeOf(0)).
-					Return([]domain.User{{
-						Username: "fetchedUser",
-					}}, nil)
-			},
-		}, {
-			name: "error invalid token type",
-			token: &domain.Token{
-				TokenType: domain.RefreshToken,
-			},
-			expectedUsers: nil,
-			expectedError: domain.ErrInvalidTokenType,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-			},
-		}, {
-			name: "error invalid token role",
-			token: &domain.Token{
-				TokenType: domain.AccessToken,
-				UserRole:  domain.Client,
-			},
-			expectedUsers: nil,
-			expectedError: domain.ErrInvalidTokenRole,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-
-			},
-		}, {
-			name: "error fetching users",
-			token: &domain.Token{
-				TokenType: domain.AccessToken,
-				UserRole:  domain.Admin,
-			},
-			expectedUsers: nil,
-			expectedError: domain.ErrInternalServerError,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-				mockUserRepository.
-					EXPECT().
-					SearchUserByUsername(
-						gomock.AssignableToTypeOf(context.Background()),
-						gomock.AssignableToTypeOf(""),
-						gomock.AssignableToTypeOf(0)).
-					Return(nil, domain.ErrInternalServerError)
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			mockUserRepository := mock.NewMockUserRepository(ctrl)
-			mockTokenRepository := mock.NewMockTokenRepository(ctrl)
-			mockPasswordHasher := mock.NewMockPasswordHasher(ctrl)
-
-			tt.mockSetup(mockUserRepository, mockTokenRepository, mockPasswordHasher)
-
-			users, err := service.
-				NewAdminService(mockUserRepository, mockTokenRepository, mockPasswordHasher).
-				SearchUserByUsername(context.Background(), tt.token, "", 10)
-			if tt.expectedError != nil {
-				require.ErrorIs(t, err, tt.expectedError)
-			} else {
-				require.NoError(t, err)
-			}
-			require.Equal(t, tt.expectedUsers, users)
-		})
-	}
-}
-
-func TestAdminService_SearchUserByEmail(t *testing.T) {
-	tests := []struct {
-		name          string
-		token         *domain.Token
-		expectedUsers []domain.User
-		expectedError error
-		mockSetup     func(
-			mockUserRepository *mock.MockUserRepository,
-			mockTokenRepository *mock.MockTokenRepository,
-			mockPasswordHasher *mock.MockPasswordHasher,
-		)
-	}{
-		{
-			name: "success",
-			token: &domain.Token{
-				TokenType: domain.AccessToken,
-				UserRole:  domain.Admin,
-			},
-			expectedUsers: []domain.User{
-				{
-					Username: "fetchedUser",
-				},
-			},
-			expectedError: nil,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-				mockUserRepository.
-					EXPECT().
-					SearchUserByEmail(
-						gomock.AssignableToTypeOf(context.Background()),
-						gomock.AssignableToTypeOf(""),
-						gomock.AssignableToTypeOf(0)).
-					Return([]domain.User{{
-						Username: "fetchedUser",
-					}}, nil)
-			},
-		}, {
-			name: "error invalid token type",
-			token: &domain.Token{
-				TokenType: domain.RefreshToken,
-			},
-			expectedUsers: nil,
-			expectedError: domain.ErrInvalidTokenType,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-			},
-		}, {
-			name: "error invalid token role",
-			token: &domain.Token{
-				TokenType: domain.AccessToken,
-				UserRole:  domain.Client,
-			},
-			expectedUsers: nil,
-			expectedError: domain.ErrInvalidTokenRole,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-
-			},
-		}, {
-			name: "error fetching users",
-			token: &domain.Token{
-				TokenType: domain.AccessToken,
-				UserRole:  domain.Admin,
-			},
-			expectedUsers: nil,
-			expectedError: domain.ErrInternalServerError,
-			mockSetup: func(
-				mockUserRepository *mock.MockUserRepository,
-				mockTokenRepository *mock.MockTokenRepository,
-				mockPasswordHasher *mock.MockPasswordHasher,
-			) {
-				mockUserRepository.
-					EXPECT().
-					SearchUserByEmail(
-						gomock.AssignableToTypeOf(context.Background()),
-						gomock.AssignableToTypeOf(""),
-						gomock.AssignableToTypeOf(0)).
-					Return(nil, domain.ErrInternalServerError)
-			},
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			ctrl := gomock.NewController(t)
-			mockUserRepository := mock.NewMockUserRepository(ctrl)
-			mockTokenRepository := mock.NewMockTokenRepository(ctrl)
-			mockPasswordHasher := mock.NewMockPasswordHasher(ctrl)
-
-			tt.mockSetup(mockUserRepository, mockTokenRepository, mockPasswordHasher)
-
-			users, err := service.
-				NewAdminService(mockUserRepository, mockTokenRepository, mockPasswordHasher).
-				SearchUserByEmail(context.Background(), tt.token, "", 10)
-			if tt.expectedError != nil {
-				require.ErrorIs(t, err, tt.expectedError)
-			} else {
-				require.NoError(t, err)
-			}
-			require.Equal(t, tt.expectedUsers, users)
-		})
-	}
-
-}
-
-func TestAdminService_GetUserById(t *testing.T) {
-	tests := []struct {
-		name          string
-		token         *domain.Token
-		expectedUser  *domain.User
-		expectedError error
-		mockSetup     func(
-			mockUserRepository *mock.MockUserRepository,
-			mockTokenRepository *mock.MockTokenRepository,
-			mockPasswordHasher *mock.MockPasswordHasher,
-		)
-	}{
-		{
-			name: "success",
-			token: &domain.Token{
-				TokenType: domain.AccessToken,
-				UserRole:  domain.Admin,
-			},
-			expectedUser: &domain.User{
-				Username: "fetchedUser",
-			},
-			expectedError: nil,
 			mockSetup: func(
 				mockUserRepository *mock.MockUserRepository,
 				mockTokenRepository *mock.MockTokenRepository,
@@ -520,8 +56,10 @@ func TestAdminService_GetUserById(t *testing.T) {
 						gomock.AssignableToTypeOf(uuid.UUID{}),
 					).
 					Return(&domain.User{
+						Id:       uuid.UUID{},
 						Username: "fetchedUser",
 					}, nil)
+
 			},
 		}, {
 			name: "error invalid token type",
@@ -529,7 +67,6 @@ func TestAdminService_GetUserById(t *testing.T) {
 				TokenType: domain.RefreshToken,
 				UserRole:  domain.Admin,
 			},
-			expectedUser:  nil,
 			expectedError: domain.ErrInvalidTokenType,
 			mockSetup: func(
 				mockUserRepository *mock.MockUserRepository,
@@ -539,12 +76,10 @@ func TestAdminService_GetUserById(t *testing.T) {
 
 			},
 		}, {
-			name: "error invalid token role",
+			name: "error invalid user role",
 			token: &domain.Token{
 				TokenType: domain.AccessToken,
-				UserRole:  domain.Client,
 			},
-			expectedUser:  nil,
 			expectedError: domain.ErrInvalidTokenRole,
 			mockSetup: func(
 				mockUserRepository *mock.MockUserRepository,
@@ -554,25 +89,38 @@ func TestAdminService_GetUserById(t *testing.T) {
 
 			},
 		}, {
-			name: "error fetching user",
+			name: "error limit not set",
 			token: &domain.Token{
 				TokenType: domain.AccessToken,
 				UserRole:  domain.Admin,
 			},
-			expectedUser:  nil,
-			expectedError: domain.ErrInternalServerError,
+			expectedError: domain.ErrLimitNotSet,
+			get: &domain.GetUsers{
+				After: &time.Time{},
+			},
 			mockSetup: func(
 				mockUserRepository *mock.MockUserRepository,
 				mockTokenRepository *mock.MockTokenRepository,
 				mockPasswordHasher *mock.MockPasswordHasher,
 			) {
-				mockUserRepository.
-					EXPECT().
-					GetUserById(
-						gomock.AssignableToTypeOf(context.Background()),
-						gomock.AssignableToTypeOf(uuid.UUID{}),
-					).
-					Return(nil, domain.ErrInternalServerError)
+
+			},
+		}, {
+			name: "error invalid query",
+			token: &domain.Token{
+				TokenType: domain.AccessToken,
+				UserRole:  domain.Admin,
+			},
+			get: &domain.GetUsers{
+				Limit: new(int),
+			},
+			expectedError: domain.ErrInvalidQuery,
+			mockSetup: func(
+				mockUserRepository *mock.MockUserRepository,
+				mockTokenRepository *mock.MockTokenRepository,
+				mockPasswordHasher *mock.MockPasswordHasher,
+			) {
+
 			},
 		},
 	}
@@ -583,23 +131,22 @@ func TestAdminService_GetUserById(t *testing.T) {
 			mockUserRepository := mock.NewMockUserRepository(ctrl)
 			mockTokenRepository := mock.NewMockTokenRepository(ctrl)
 			mockPasswordHasher := mock.NewMockPasswordHasher(ctrl)
-
 			tt.mockSetup(mockUserRepository, mockTokenRepository, mockPasswordHasher)
 
-			user, err := service.
+			result, err := service.
 				NewAdminService(mockUserRepository, mockTokenRepository, mockPasswordHasher).
-				GetUserById(context.Background(), tt.token, uuid.UUID{})
+				GetUsers(context.Background(), tt.token, tt.get)
 
-			if tt.expectedError != nil {
-				require.ErrorIs(t, err, tt.expectedError)
-			} else {
+			if tt.expectedError == nil {
 				require.NoError(t, err)
+				require.Equal(t, tt.expectedResult, result)
+			} else {
+				require.ErrorIs(t, err, tt.expectedError)
 			}
-			require.Equal(t, tt.expectedUser, user)
 		})
 	}
-}
 
+}
 func TestAdminService_UpdateUser(t *testing.T) {
 	username := "newUsername"
 
@@ -693,7 +240,7 @@ func TestAdminService_UpdateUser(t *testing.T) {
 			update: &domain.UserUpdate{
 				Id: uuid.UUID{},
 			},
-			expectedError: domain.ErrNoUserFieldsToUpdate,
+			expectedError: domain.ErrNoFieldsToUpdate,
 			mockSetup: func(
 				mockUserRepository *mock.MockUserRepository,
 				mockTokenRepository *mock.MockTokenRepository,

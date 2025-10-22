@@ -47,91 +47,35 @@ func (h *UserHandler) Register(c *gin.Context) {
 	c.Status(http.StatusCreated)
 }
 
-// changeUsernameRequest represent a request body for changing username.
-type changeUsernameRequest struct {
-	Username    string `json:"username"`
-	Password    string `json:"password"`
-	NewUsername string `json:"newUsername" binding:"required,min_bytes=8,max_bytes=255"`
+// updateRequest represents a request body for updating user account.
+type updateRequest struct {
+	Username    string  `json:"username" binding:"required"`
+	Password    string  `json:"password" binding:"required"`
+	NewUsername *string `json:"newUsername" binding:"omitempty,min_bytes=8,max_bytes=255"`
+	NewEmail    *string `json:"newEmail" binding:"omitempty,min_bytes=8,max_bytes=255"`
+	NewPassword *string `json:"newPassword" binding:"omitempty,password"`
 }
 
-func (h *UserHandler) ChangeUsername(c *gin.Context) {
-	var req changeUsernameRequest
+func (h *UserHandler) UpdateAccount(c *gin.Context) {
+	var req updateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		handleBindingError(c, err)
 		return
 	}
 
-	err := h.userService.ChangeUsername(
-		c,
-		&domain.User{
-			Username: req.Username,
-			Password: req.Password,
-		},
-		req.NewUsername,
-	)
-	if err != nil {
-		handleError(c, err)
-		return
-	}
-	c.Status(http.StatusCreated)
-}
-
-// changeEmailRequest represent a request body for changing username.
-type changeEmailRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-	NewEmail string `json:"newEmail" binding:"required,min_bytes=8,max_bytes=255"`
-}
-
-func (h *UserHandler) ChangeEmail(c *gin.Context) {
-	var req changeEmailRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handleBindingError(c, err)
-		return
-	}
-
-	err := h.userService.
-		ChangeEmail(
+	if err := h.userService.
+		UpdateAccount(
 			c,
-			&domain.User{
-				Username: req.Username,
-				Password: req.Password,
-			},
-			req.NewEmail)
-	if err != nil {
+			domain.NewUpdateAccount(
+				req.Username,
+				req.Password,
+				req.NewUsername,
+				req.NewEmail,
+				req.NewPassword),
+		); err != nil {
 		handleError(c, err)
 		return
 	}
 
-	c.Status(http.StatusCreated)
-}
-
-// changePasswordRequest represents a request body for changing password.
-type changePasswordRequest struct {
-	Username    string `json:"username"`
-	Password    string `json:"password"`
-	NewPassword string `json:"newPassword" binding:"required,password"`
-}
-
-func (h *UserHandler) ChangePassword(c *gin.Context) {
-	var req changePasswordRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		handleBindingError(c, err)
-		return
-	}
-
-	err := h.userService.ChangePassword(
-		c,
-		&domain.User{
-			Username: req.Username,
-			Password: req.Password,
-		},
-		req.NewPassword,
-	)
-	if err != nil {
-		handleError(c, err)
-		return
-	}
-
-	c.Status(http.StatusCreated)
+	c.Status(http.StatusOK)
 }

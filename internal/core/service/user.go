@@ -39,79 +39,44 @@ func (s *UserService) Register(ctx context.Context, user *domain.User) error {
 	return s.userRepository.AddUser(ctx, user)
 }
 
-func (s *UserService) ChangeUsername(ctx context.Context, user *domain.User, username string) error {
-	fetchedUser, err := s.userRepository.GetUserByUsername(ctx, user.Username)
+func (s *UserService) UpdateAccount(ctx context.Context, update *domain.UpdateAccount) error {
+	hasFieldToUpdate := false
+	if update.NewUsername != nil {
+		hasFieldToUpdate = true
+	}
+	if update.NewPassword != nil {
+		hasFieldToUpdate = true
+	}
+	if update.NewPassword != nil {
+		hasFieldToUpdate = true
+	}
+	if !hasFieldToUpdate {
+		return domain.ErrNoFieldsToUpdate
+	}
+
+	fetchedUser, err := s.userRepository.GetUserByUsername(ctx, update.Username)
 	if errors.Is(err, domain.ErrUserNotFound) {
 		return domain.ErrWrongCredentials
 	} else if err != nil {
-		return domain.ErrInternalServerError
-	}
-
-	err = s.passwordHasher.Compare(user.Password, fetchedUser.Password)
-	if err != nil {
 		return err
 	}
 
-	err = s.userRepository.UpdateUsername(ctx, fetchedUser.Id, username)
-	if err != nil {
-		return domain.ErrInternalServerError
-	}
-
-	err = s.tokenRepository.DeleteAllTokensByUserId(ctx, fetchedUser.Id)
-	if err != nil {
-		return domain.ErrInternalServerError
-	}
-
-	return nil
-}
-
-func (s *UserService) ChangeEmail(ctx context.Context, user *domain.User, email string) error {
-	fetchedUser, err := s.userRepository.GetUserByUsername(ctx, user.Username)
-	if errors.Is(err, domain.ErrUserNotFound) {
-		return domain.ErrWrongCredentials
-	} else if err != nil {
-		return domain.ErrInternalServerError
-	}
-
-	err = s.passwordHasher.Compare(user.Password, fetchedUser.Password)
-	if err != nil {
+	if err = s.passwordHasher.Compare(update.Password, fetchedUser.Password); err != nil {
 		return err
 	}
 
-	err = s.userRepository.UpdateEmail(ctx, fetchedUser.Id, email)
-	if err != nil {
+	if err = s.userRepository.UpdateUser(ctx, &domain.UserUpdate{
+		Id:       fetchedUser.Id,
+		Username: update.NewUsername,
+		Email:    update.NewEmail,
+		Password: update.NewPassword,
+	}); err != nil {
 		return err
 	}
 
-	return nil
-}
-
-func (s *UserService) ChangePassword(ctx context.Context, user *domain.User, password string) error {
-	fetchedUser, err := s.userRepository.GetUserByUsername(ctx, user.Username)
-	if errors.Is(err, domain.ErrUserNotFound) {
-		return domain.ErrWrongCredentials
-	} else if err != nil {
-		return domain.ErrInternalServerError
-	}
-
-	err = s.passwordHasher.Compare(user.Password, fetchedUser.Password)
-	if err != nil {
+	if err = s.tokenRepository.DeleteAllTokensByUserId(ctx, fetchedUser.Id); err != nil {
 		return err
 	}
 
-	hash, err := s.passwordHasher.Hash(password)
-	if err != nil {
-		return err
-	}
-
-	err = s.userRepository.UpdatePassword(ctx, fetchedUser.Id, hash)
-	if err != nil {
-		return err
-	}
-
-	err = s.tokenRepository.DeleteAllTokensByUserId(ctx, fetchedUser.Id)
-	if err != nil {
-		return err
-	}
 	return nil
 }
