@@ -2,6 +2,8 @@ package http
 
 import (
 	"net/http"
+	"shop-api-go/internal/adapter/handler/http/request"
+	"shop-api-go/internal/adapter/handler/http/response"
 	"shop-api-go/internal/core/domain"
 	"shop-api-go/internal/core/port"
 
@@ -18,50 +20,38 @@ func NewAuthHandler(authService port.AuthService) *AuthHandler {
 	return &AuthHandler{authService: authService}
 }
 
-// loginRequest represents a request body for logging in.
-type loginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
 func (h *AuthHandler) Login(c *gin.Context) {
-	var req loginRequest
+	var req request.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		handleBindingError(c, err)
+		response.HandleError(c, err)
 		return
 	}
 
 	tokenGroup, err := h.authService.Login(c, &domain.User{Username: req.Username, Password: req.Password})
 	if err != nil {
-		handleError(c, err)
+		response.HandleError(c, err)
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"accessToken":  tokenGroup.AccessToken,
-		"refreshToken": tokenGroup.RefreshToken,
-	})
+	c.JSON(http.StatusOK, response.NewTokensResponse(tokenGroup))
 }
 
 func (h *AuthHandler) RefreshSession(c *gin.Context) {
 	token, ok := c.Get("token")
 	if !ok {
-		handleError(c, domain.ErrInternalServerError)
+		response.HandleError(c, domain.ErrInternalServerError)
 		return
 	}
 	domainToken, ok := token.(*domain.Token)
 	if !ok {
-		handleError(c, domain.ErrInternalServerError)
+		response.HandleError(c, domain.ErrInternalServerError)
 		return
 	}
 
 	tokenGroup, err := h.authService.RefreshSession(c, domainToken)
 	if err != nil {
-		handleError(c, err)
+		response.HandleError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"accessToken":  tokenGroup.AccessToken,
-		"refreshToken": tokenGroup.RefreshToken,
-	})
+	c.JSON(http.StatusOK, response.NewTokensResponse(tokenGroup))
 }

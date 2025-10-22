@@ -1,4 +1,4 @@
-package http
+package response
 
 import (
 	"errors"
@@ -86,8 +86,8 @@ var errMap = map[error]errorResponse{
 	},
 }
 
-// handleError parses the error and return a proper message to the client.
-func handleError(c *gin.Context, err error) {
+// HandleError parses the error and return a proper message to the client.
+func HandleError(c *gin.Context, err error) {
 	res, ok := errMap[err]
 	if !ok {
 		res = errorResponse{
@@ -111,8 +111,8 @@ func handleError(c *gin.Context, err error) {
 	})
 }
 
-// handleBindingError parses the error and returns a proper message to the client.
-func handleBindingError(c *gin.Context, err error) {
+// HandleBindingError parses the error and returns a proper message to the client.
+func HandleBindingError(c *gin.Context, err error) {
 	var validationsErrors validator.ValidationErrors
 	messages := make([]string, 0, len(validationsErrors))
 

@@ -2,6 +2,8 @@ package http
 
 import (
 	"net/http"
+	"shop-api-go/internal/adapter/handler/http/request"
+	"shop-api-go/internal/adapter/handler/http/response"
 	"shop-api-go/internal/core/domain"
 	"shop-api-go/internal/core/service"
 
@@ -20,17 +22,10 @@ func NewUserHandler(userService *service.UserService) *UserHandler {
 	}
 }
 
-// registerRequest represent a request body for creating a user.
-type registerRequest struct {
-	Email    string `json:"email" binding:"required,email,min_bytes=8,max_bytes=255"`
-	Username string `json:"username" binding:"required,min_bytes=8,max_bytes=255"`
-	Password string `json:"password" binding:"required,password"`
-}
-
 func (h *UserHandler) Register(c *gin.Context) {
-	var req registerRequest
+	var req request.RegisterRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		handleBindingError(c, err)
+		response.HandleBindingError(c, err)
 		return
 	}
 
@@ -40,26 +35,17 @@ func (h *UserHandler) Register(c *gin.Context) {
 		Password: req.Password,
 	})
 	if err != nil {
-		handleError(c, err)
+		response.HandleError(c, err)
 		return
 	}
 
 	c.Status(http.StatusCreated)
 }
 
-// updateRequest represents a request body for updating user account.
-type updateRequest struct {
-	Username    string  `json:"username" binding:"required"`
-	Password    string  `json:"password" binding:"required"`
-	NewUsername *string `json:"newUsername" binding:"omitempty,min_bytes=8,max_bytes=255"`
-	NewEmail    *string `json:"newEmail" binding:"omitempty,min_bytes=8,max_bytes=255"`
-	NewPassword *string `json:"newPassword" binding:"omitempty,password"`
-}
-
 func (h *UserHandler) UpdateAccount(c *gin.Context) {
-	var req updateRequest
+	var req request.UpdateAccountRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		handleBindingError(c, err)
+		response.HandleBindingError(c, err)
 		return
 	}
 
@@ -73,7 +59,7 @@ func (h *UserHandler) UpdateAccount(c *gin.Context) {
 				req.NewEmail,
 				req.NewPassword),
 		); err != nil {
-		handleError(c, err)
+		response.HandleError(c, err)
 		return
 	}
 

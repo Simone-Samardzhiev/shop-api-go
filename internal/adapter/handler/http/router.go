@@ -2,6 +2,7 @@ package http
 
 import (
 	"shop-api-go/internal/adapter/config"
+	"shop-api-go/internal/adapter/handler/http/middleware"
 	"shop-api-go/internal/core/port"
 
 	"github.com/gin-gonic/gin"
@@ -37,8 +38,8 @@ func NewRouter(
 
 	r := gin.New()
 	r.Use(gin.Recovery())
-	r.Use(zapLogger())
-	jwtMiddleware := newJwtMiddleware(tokenGenerator, "token")
+	r.Use(middleware.ZapLogger())
+	jwtMiddleware := middleware.JWTMiddleware(tokenGenerator, "token")
 
 	v1 := r.Group("/api/v1")
 	{
