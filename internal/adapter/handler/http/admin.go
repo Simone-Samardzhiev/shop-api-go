@@ -25,6 +25,26 @@ func NewAdminHandler(userService port.AdminService) *AdminHandler {
 	}
 }
 
+// GetUsers godoc
+// @Summary      Users information
+// @Description  Retrieves user information with optional filters and pagination. Requires admin privileges and a valid JWT token in the Authorization header.
+// @Tags         Admin
+// @Security     BearerAuth
+// @Param        Authorization  header    string  true   "Bearer access token"
+// @Param        id             query     string  false  "Filter by user ID (UUID)"
+// @Param        username       query     string  false  "Filter by username"
+// @Param        email          query     string  false  "Filter by email address"
+// @Param        role           query     string  false  "Filter by user role (e.g. 'admin', 'user')"
+// @Param        page           query     int     false  "Page number for pagination (min=1)"
+// @Param        cursor         query     string  false  "Base64-encoded timestamp cursor for pagination"
+// @Param        limit          query     int     false  "Maximum number of users to return (min=1)"
+// @Produce      json
+// @Success      200  {object}  response.FetchingUsersResponse "List of users"
+// @Failure      400  {object}  response.ErrorResponse "Invalid query parameters"
+// @Failure      401  {object}  response.ErrorResponse "Missing or invalid JWT token"
+// @Failure      403  {object}  response.ErrorResponse "Insufficient permissions or invalid token type(expected access token)"
+// @Failure      500  {object}  response.ErrorResponse "Internal server error"
+// @Router       /admin/users [get]
 func (h *AdminHandler) GetUsers(c *gin.Context) {
 	token, ok := c.Get("token")
 	if !ok {
@@ -76,6 +96,21 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, response.NewFetchingUsersResponse(result))
 }
 
+// UpdateUser godoc
+// @Summary      Update user by admin
+// @Description  Allows an admin to update a user's information, including username, email, password, and role. Requires a valid admin JWT token.
+// @Tags         Admin
+// @Security     BearerAuth
+// @Param        Authorization  header    string              true   "Bearer access token"
+// @Param        id             path      string              true   "User ID (UUID) to update"
+// @Param        request        body      request.UpdateUser  true   "Fields to update for the user"
+// @Success      200            {string}  string              "User updated successfully"
+// @Failure      400            {object}  response.ErrorResponse "Invalid request payload or parameters"
+// @Failure      401            {object}  response.ErrorResponse "Unauthorized – invalid token"
+// @Failure      403            {object}  response.ErrorResponse "Forbidden – insufficient permissions or invalid token type(expected access token)"
+// @Failure      404            {object}  response.ErrorResponse "User not found"
+// @Failure      500            {object}  response.ErrorResponse "Internal server error"
+// @Router       /admin/users/update/{id} [patch]
 func (h *AdminHandler) UpdateUser(c *gin.Context) {
 	token, ok := c.Get("token")
 	if !ok {

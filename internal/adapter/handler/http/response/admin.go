@@ -10,12 +10,12 @@ import (
 
 // user represents a response with user's information.
 type user struct {
-	Id        uuid.UUID       `json:"id"`
-	Username  string          `json:"username"`
-	Email     string          `json:"email"`
-	Role      domain.UserRole `json:"role"`
-	CreatedAt time.Time       `json:"createdAt"`
-	UpdatedAt time.Time       `json:"updatedAt"`
+	Id        uuid.UUID       `json:"id" example:"1bd70616-480b-47b9-91f5-292b4f4a45b1"`
+	Username  string          `json:"username" example:"Viktor123"`
+	Email     string          `json:"email" example:"viktor.stavchev@gmail.com"`
+	Role      domain.UserRole `json:"role" example:"client"`
+	CreatedAt time.Time       `json:"createdAt" example:"2025-10-15T12:37:42.664482Z"`
+	UpdatedAt time.Time       `json:"updatedAt" example:"2025-10-15T12:37:42.664482Z"`
 }
 
 // newUser creates a new user instance.
@@ -33,7 +33,7 @@ func newUser(u *domain.User) user {
 // FetchingUsersResponse represents a response when fetching users.
 type FetchingUsersResponse struct {
 	Users  []user  `json:"users"`
-	Cursor *string `json:"cursor"`
+	Cursor *string `json:"cursor" example:"MjAyNS0xMC0xNVQxMjo0MDoxOS41NTU4Mjda"`
 }
 
 // NewFetchingUsersResponse creates a new FetchingUsersResponse instance.

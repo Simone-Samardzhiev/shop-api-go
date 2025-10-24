@@ -30,3 +30,9 @@ tasks:
     vars:
       TARGET_VERSION: '{{.VERSION | default "-1"}}'
     cmd: migrate -path {{.MIGRATIONS_PATH}} -database "{{.DATABASE_URL}}" force {{.TARGET_VERSION}}
+
+  swag-init:
+    desc: "Generate swagger dock using swag"
+    cmd: swag init -g cmd/http/main.go -o docs/ --parseInternal
+
+

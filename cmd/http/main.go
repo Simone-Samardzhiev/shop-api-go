@@ -18,6 +18,12 @@ import (
 	"go.uber.org/zap"
 )
 
+// @title Shop API
+// @version 1.0
+// @description     This is the Shop API server for e-shop.
+// @host            localhost:8080
+// @BasePath        /api/v1
+// @schemes         http
 func main() {
 	container, err := config.New()
 	if err != nil {

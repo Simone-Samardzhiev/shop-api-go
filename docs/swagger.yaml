@@ -1,0 +1,393 @@
+basePath: /api/v1
+definitions:
+  domain.UserRole:
+    enum:
+    - admin
+    - client
+    - delivery
+    - warehouse
+    type: string
+    x-enum-varnames:
+    - Admin
+    - Client
+    - Delivery
+    - Warehouse
+  request.LoginRequest:
+    properties:
+      password:
+        example: Secret_password123
+        type: string
+      username:
+        example: MyUsername
+        type: string
+    type: object
+  request.RegisterRequest:
+    properties:
+      email:
+        example: newUser@email.com
+        type: string
+      password:
+        example: NewSecret_123
+        type: string
+      username:
+        example: newUser123
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  request.UpdateAccountRequest:
+    properties:
+      newEmail:
+        example: newEmail@emai.com
+        type: string
+      newPassword:
+        example: NewSecret_123
+        type: string
+      newUsername:
+        example: newUsername123
+        type: string
+      password:
+        example: MyPassword_123
+        type: string
+      username:
+        example: MyUsername
+        type: string
+    required:
+    - password
+    - username
+    type: object
+  request.UpdateUser:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+      role:
+        $ref: '#/definitions/domain.UserRole'
+      username:
+        type: string
+    type: object
+  response.ErrorResponse:
+    properties:
+      code:
+        example: INTERNAL_SERVER_ERROR
+        type: string
+      messages:
+        example:
+        - Server cannot process the request.
+        items:
+          type: string
+        type: array
+    type: object
+  response.FetchingUsersResponse:
+    properties:
+      cursor:
+        example: MjAyNS0xMC0xNVQxMjo0MDoxOS41NTU4Mjda
+        type: string
+      users:
+        items:
+          $ref: '#/definitions/response.user'
+        type: array
+    type: object
+  response.TokensResponse:
+    properties:
+      access_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+      refresh_token:
+        example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        type: string
+    type: object
+  response.user:
+    properties:
+      createdAt:
+        example: "2025-10-15T12:37:42.664482Z"
+        type: string
+      email:
+        example: viktor.stavchev@gmail.com
+        type: string
+      id:
+        example: 1bd70616-480b-47b9-91f5-292b4f4a45b1
+        type: string
+      role:
+        allOf:
+        - $ref: '#/definitions/domain.UserRole'
+        example: client
+      updatedAt:
+        example: "2025-10-15T12:37:42.664482Z"
+        type: string
+      username:
+        example: Viktor123
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is the Shop API server for e-shop.
+  title: Shop API
+  version: "1.0"
+paths:
+  /admin/users:
+    get:
+      description: Retrieves user information with optional filters and pagination.
+        Requires admin privileges and a valid JWT token in the Authorization header.
+      parameters:
+      - description: Bearer access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Filter by user ID (UUID)
+        in: query
+        name: id
+        type: string
+      - description: Filter by username
+        in: query
+        name: username
+        type: string
+      - description: Filter by email address
+        in: query
+        name: email
+        type: string
+      - description: Filter by user role (e.g. 'admin', 'user')
+        in: query
+        name: role
+        type: string
+      - description: Page number for pagination (min=1)
+        in: query
+        name: page
+        type: integer
+      - description: Base64-encoded timestamp cursor for pagination
+        in: query
+        name: cursor
+        type: string
+      - description: Maximum number of users to return (min=1)
+        in: query
+        name: limit
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: List of users
+          schema:
+            $ref: '#/definitions/response.FetchingUsersResponse'
+        "400":
+          description: Invalid query parameters
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Missing or invalid JWT token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Insufficient permissions or invalid token type(expected access
+            token)
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Users information
+      tags:
+      - Admin
+  /admin/users/update/{id}:
+    patch:
+      description: Allows an admin to update a user's information, including username,
+        email, password, and role. Requires a valid admin JWT token.
+      parameters:
+      - description: Bearer access token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: User ID (UUID) to update
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Fields to update for the user
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateUser'
+      responses:
+        "200":
+          description: User updated successfully
+          schema:
+            type: string
+        "400":
+          description: Invalid request payload or parameters
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized – invalid token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Forbidden – insufficient permissions or invalid token type(expected
+            access token)
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "404":
+          description: User not found
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user by admin
+      tags:
+      - Admin
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user using their username and password, returning
+        a new pair of access and refresh tokens upon successful login.
+      parameters:
+      - description: Login credentials (username and password)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.LoginRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Login successful — returns new access and refresh tokens
+          schema:
+            $ref: '#/definitions/response.TokensResponse'
+        "400":
+          description: Invalid request payload or missing fields
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Invalid credentials
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Authenticate user
+      tags:
+      - Auth
+  /auth/refresh-session:
+    post:
+      description: Refreshes the user's authentication session using a valid **refresh
+        token** provided in the Authorization header. Returns a new access/refresh
+        token pair.
+      parameters:
+      - description: 'Bearer refresh token (format: Bearer <token>)'
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Session refreshed successfully — returns new access and refresh
+            tokens
+          schema:
+            $ref: '#/definitions/response.TokensResponse'
+        "401":
+          description: Missing, malformed, or invalid token
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "403":
+          description: Invalid token type (expected refresh token)
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Refresh access token
+      tags:
+      - Auth
+  /users/me/update:
+    patch:
+      consumes:
+      - application/json
+      description: Updates a user's account. Requires current username and password
+        for authentication. Optional fields include new username, new email, and new
+        password.
+      parameters:
+      - description: Update account payload
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.UpdateAccountRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Account updated successfully
+        "400":
+          description: Invalid request payload or missing fields
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "401":
+          description: Unauthorized - invalid credentials
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update user account
+      tags:
+      - Users
+  /users/register:
+    post:
+      consumes:
+      - application/json
+      description: Registers a new user in the system using email, username, and password.
+        Returns HTTP 201 on success.
+      parameters:
+      - description: Registration details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.RegisterRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User created successfully
+        "400":
+          description: Invalid request payload or missing fields
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "409":
+          description: Email or username already exists
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/response.ErrorResponse'
+      summary: Register a new user
+      tags:
+      - Users
+schemes:
+- http
+swagger: "2.0"

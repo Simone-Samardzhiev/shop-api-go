@@ -11,77 +11,77 @@ import (
 	"go.uber.org/zap"
 )
 
-// errorResponse represent a meaningful response when an error occurs.
-type errorResponse struct {
-	code       string
-	messages   []string
+// ErrorResponse represent a meaningful response when an error occurs.
+type ErrorResponse struct {
+	Code       string   `json:"code" example:"INTERNAL_SERVER_ERROR"`
+	Messages   []string `json:"messages" example:"Server cannot process the request."`
 	statusCode int
 }
 
-var errMap = map[error]errorResponse{
+var errMap = map[error]ErrorResponse{
 	domain.ErrInternalServerError: {
-		code:       "INTERNAL_SERVER_ERROR",
-		messages:   []string{"Server cannot process the request."},
+		Code:       "INTERNAL_SERVER_ERROR",
+		Messages:   []string{"Server cannot process the request."},
 		statusCode: http.StatusInternalServerError,
 	},
 	domain.ErrEmailAlreadyInUse: {
-		code:       "EMAIL_ALREADY_IN_USE",
-		messages:   []string{"Email is already in use."},
+		Code:       "EMAIL_ALREADY_IN_USE",
+		Messages:   []string{"Email is already in use."},
 		statusCode: http.StatusConflict,
 	},
 	domain.ErrUsernameAlreadyInUse: {
-		code:       "USER_ALREADY_IN_USE",
-		messages:   []string{"Username is already in use."},
+		Code:       "USER_ALREADY_IN_USE",
+		Messages:   []string{"Username is already in use."},
 		statusCode: http.StatusConflict,
 	},
 	domain.ErrWrongCredentials: {
-		code:       "WRONG_CREDENTIALS",
-		messages:   []string{"Wrong credentials."},
+		Code:       "WRONG_CREDENTIALS",
+		Messages:   []string{"Wrong credentials."},
 		statusCode: http.StatusUnauthorized,
 	}, domain.ErrUserNotFound: {
-		code:       "USER_NOT_FOUND",
-		messages:   []string{"User not found."},
+		Code:       "USER_NOT_FOUND",
+		Messages:   []string{"User not found."},
 		statusCode: http.StatusNotFound,
 	}, domain.ErrNoFieldsToUpdate: {
-		code:       "NO_FIELDS_TO_UPDATE",
-		messages:   []string{"No fields to update."},
+		Code:       "NO_FIELDS_TO_UPDATE",
+		Messages:   []string{"No fields to update."},
 		statusCode: http.StatusBadRequest,
 	}, domain.ErrInvalidQuery: {
-		code:       "INVALID_QUERY",
-		messages:   []string{"Invalid query."},
+		Code:       "INVALID_QUERY",
+		Messages:   []string{"Invalid query."},
 		statusCode: http.StatusBadRequest,
 	}, domain.ErrInvalidCursorFormat: {
-		code:       "INVALID_CURSOR_FORMAT",
-		messages:   []string{"Invalid cursor format."},
+		Code:       "INVALID_CURSOR_FORMAT",
+		Messages:   []string{"Invalid cursor format."},
 		statusCode: http.StatusBadRequest,
 	},
 	domain.ErrLimitNotSet: {
-		code:       "LIMIT_NOT_SET",
-		messages:   []string{"Please provide a limit when fetching a list of objects."},
+		Code:       "LIMIT_NOT_SET",
+		Messages:   []string{"Please provide a limit when fetching a list of objects."},
 		statusCode: http.StatusBadRequest,
 	},
 	domain.ErrInvalidToken: {
-		code:       "INVALID_TOKEN",
-		messages:   []string{"Token is invalid."},
+		Code:       "INVALID_TOKEN",
+		Messages:   []string{"Token is invalid."},
 		statusCode: http.StatusUnauthorized,
 	},
 	domain.ErrInvalidTokenType: {
-		code:       "INVALID_TOKEN_TYPE",
-		messages:   []string{"Token type is invalid."},
+		Code:       "INVALID_TOKEN_TYPE",
+		Messages:   []string{"Token type is invalid."},
 		statusCode: http.StatusForbidden,
 	}, domain.ErrInvalidTokenRole: {
-		code:       "INVALID_TOKEN_ROLE",
-		messages:   []string{"Token role is invalid."},
+		Code:       "INVALID_TOKEN_ROLE",
+		Messages:   []string{"Token role is invalid."},
 		statusCode: http.StatusForbidden,
 	},
 	domain.ErrMalformedToken: {
-		code:       "MALFORMED_TOKEN",
-		messages:   []string{"Token is malformed."},
+		Code:       "MALFORMED_TOKEN",
+		Messages:   []string{"Token is malformed."},
 		statusCode: http.StatusUnauthorized,
 	},
 	domain.ErrTokenNotFound: {
-		code:       "TOKEN_NOT_FOUND",
-		messages:   []string{"Token not found."},
+		Code:       "TOKEN_NOT_FOUND",
+		Messages:   []string{"Token not found."},
 		statusCode: http.StatusNotFound,
 	},
 }
@@ -90,9 +90,9 @@ var errMap = map[error]errorResponse{
 func HandleError(c *gin.Context, err error) {
 	res, ok := errMap[err]
 	if !ok {
-		res = errorResponse{
-			code:       "INTERNAL_SERVER_ERROR",
-			messages:   []string{"Server cannot process the request."},
+		res = ErrorResponse{
+			Code:       "INTERNAL_SERVER_ERROR",
+			Messages:   []string{"Server cannot process the request."},
 			statusCode: http.StatusInternalServerError,
 		}
 	}
@@ -100,15 +100,12 @@ func HandleError(c *gin.Context, err error) {
 	zap.L().Error(
 		"HTTP request error",
 		zap.Int("status", res.statusCode),
-		zap.Strings("messages", res.messages),
-		zap.String("code", res.code),
+		zap.Strings("messages", res.Messages),
+		zap.String("Code", res.Code),
 		zap.Error(err),
 	)
 
-	c.JSON(res.statusCode, gin.H{
-		"code":     res.code,
-		"messages": res.messages,
-	})
+	c.JSON(res.statusCode, res)
 }
 
 // HandleBindingError parses the error and returns a proper message to the client.
@@ -150,7 +147,7 @@ func HandleBindingError(c *gin.Context, err error) {
 	)
 
 	c.JSON(http.StatusBadRequest, gin.H{
-		"code":     "INVALID_ENTITY",
+		"Code":     "INVALID_ENTITY",
 		"messages": messages,
 	})
 }
