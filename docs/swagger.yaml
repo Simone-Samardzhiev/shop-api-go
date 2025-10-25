@@ -93,10 +93,10 @@ definitions:
     type: object
   response.TokensResponse:
     properties:
-      access_token:
+      accessToken:
         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         type: string
-      refresh_token:
+      refreshToken:
         example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
         type: string
     type: object
