@@ -35,4 +35,16 @@ tasks:
     desc: "Generate swagger dock using swag"
     cmd: swag init -g cmd/http/main.go -o docs/ --parseInternal
 
+  run-api:
+    desc: "Starts the API"
+    cmds:
+      - go build -o bin/http ./cmd/http
+      - ./bin/http
+
+  run-setup:
+    desc: "Starts the setup CLI"
+    cmds:
+      - go build -o bin/setup ./cmd/setup
+      - ./nin/setup
+
 
