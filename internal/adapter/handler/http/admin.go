@@ -57,9 +57,19 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 		return
 	}
 	query := request.GetUserQuery{}
-	if err := c.BindQuery(&query); err != nil {
+	if err := c.ShouldBindQuery(&query); err != nil {
 		response.HandleBindingError(c, err)
 		return
+	}
+
+	var id *uuid.UUID
+	if query.Id != nil {
+		parsedId, err := uuid.Parse(*query.Id)
+		if err != nil {
+			response.HandleError(c, domain.ErrInvalidUUID)
+			return
+		}
+		id = &parsedId
 	}
 
 	var after *time.Time
@@ -67,13 +77,13 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 		if *query.Cursor == "" {
 			after = &time.Time{}
 		} else {
-			decoded, err := base64.URLEncoding.DecodeString(*query.Cursor)
-			if err != nil {
+			decoded, decodeErr := base64.URLEncoding.DecodeString(*query.Cursor)
+			if decodeErr != nil {
 				response.HandleError(c, domain.ErrInvalidCursorFormat)
 				return
 			}
-			parsedTime, err := time.Parse(time.RFC3339Nano, string(decoded))
-			if err != nil {
+			parsedTime, decodeErr := time.Parse(time.RFC3339Nano, string(decoded))
+			if decodeErr != nil {
 				response.HandleError(c, domain.ErrInvalidCursorFormat)
 				return
 			}
@@ -85,7 +95,7 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 		c,
 		domainToken,
 		domain.NewGetUsers(
-			query.Id, query.Username, query.Email, query.Role, query.Page, after, query.Limit,
+			id, query.Username, query.Email, query.Role, query.Page, after, query.Limit,
 		),
 	)
 	if err != nil {

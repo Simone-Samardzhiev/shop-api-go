@@ -2,13 +2,11 @@ package request
 
 import (
 	"shop-api-go/internal/core/domain"
-
-	"github.com/google/uuid"
 )
 
 // GetUserQuery represents query parameters for fetching user.
 type GetUserQuery struct {
-	Id       *uuid.UUID       `form:"id"`
+	Id       *string          `form:"id"`
 	Username *string          `form:"username"`
 	Email    *string          `form:"email"`
 	Role     *domain.UserRole `form:"role" binding:"omitempty,user_role"`

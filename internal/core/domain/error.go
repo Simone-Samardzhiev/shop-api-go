@@ -25,6 +25,8 @@ var (
 	ErrInvalidCursorFormat = errors.New("invalid cursor format")
 	// ErrInvalidParam is an error for when passed param is not valid.
 	ErrInvalidParam = errors.New("invalid param")
+	// ErrInvalidUUID is an error for when passed uuid is not valid.
+	ErrInvalidUUID = errors.New("invalid uuid")
 	// ErrInvalidToken is an error for when token parsing fails.
 	ErrInvalidToken = errors.New("invalid token")
 	// ErrInvalidTokenType is an error for when user use invalid token type.

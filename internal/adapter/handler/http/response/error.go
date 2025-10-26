@@ -54,18 +54,23 @@ var errMap = map[error]ErrorResponse{
 		Code:       "INVALID_CURSOR_FORMAT",
 		Messages:   []string{"Invalid cursor format."},
 		statusCode: http.StatusBadRequest,
-	},
-	domain.ErrLimitNotSet: {
+	}, domain.ErrInvalidParam: {
+		Code:       "INVALID_PARAM",
+		Messages:   []string{"Invalid param."},
+		statusCode: http.StatusBadRequest,
+	}, domain.ErrInvalidUUID: {
+		Code:       "INVALID_UUID",
+		Messages:   []string{"Invalid uuid."},
+		statusCode: http.StatusBadRequest,
+	}, domain.ErrLimitNotSet: {
 		Code:       "LIMIT_NOT_SET",
 		Messages:   []string{"Please provide a limit when fetching a list of objects."},
 		statusCode: http.StatusBadRequest,
-	},
-	domain.ErrInvalidToken: {
+	}, domain.ErrInvalidToken: {
 		Code:       "INVALID_TOKEN",
 		Messages:   []string{"Token is invalid."},
 		statusCode: http.StatusUnauthorized,
-	},
-	domain.ErrInvalidTokenType: {
+	}, domain.ErrInvalidTokenType: {
 		Code:       "INVALID_TOKEN_TYPE",
 		Messages:   []string{"Token type is invalid."},
 		statusCode: http.StatusForbidden,
@@ -73,13 +78,11 @@ var errMap = map[error]ErrorResponse{
 		Code:       "INVALID_TOKEN_ROLE",
 		Messages:   []string{"Token role is invalid."},
 		statusCode: http.StatusForbidden,
-	},
-	domain.ErrMalformedToken: {
+	}, domain.ErrMalformedToken: {
 		Code:       "MALFORMED_TOKEN",
 		Messages:   []string{"Token is malformed."},
 		statusCode: http.StatusUnauthorized,
-	},
-	domain.ErrTokenNotFound: {
+	}, domain.ErrTokenNotFound: {
 		Code:       "TOKEN_NOT_FOUND",
 		Messages:   []string{"Token not found."},
 		statusCode: http.StatusNotFound,
