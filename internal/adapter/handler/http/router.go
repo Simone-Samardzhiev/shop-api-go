@@ -1,6 +1,8 @@
 package http
 
 import (
+	"context"
+	"net/http"
 	"shop-api-go/internal/adapter/config"
 	"shop-api-go/internal/adapter/handler/http/middleware"
 	"shop-api-go/internal/core/port"
@@ -11,8 +13,7 @@ import (
 )
 
 type Router struct {
-	*gin.Engine
-	appConfig *config.AppConfig
+	server *http.Server
 }
 
 func NewRouter(
@@ -21,12 +22,20 @@ func NewRouter(
 	userHandler *UserHandler,
 	adminHandler *AdminHandler,
 	authHandler *AuthHandler,
-) *Router {
+) (*Router, error) {
 	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		_ = v.RegisterValidation("password", validatePassword)
-		_ = v.RegisterValidation("min_bytes", validateMinBytesLength)
-		_ = v.RegisterValidation("max_bytes", validateMaxBytesLength)
-		_ = v.RegisterValidation("user_role", validateUserRole)
+		if err := v.RegisterValidation("password", validatePassword); err != nil {
+			return nil, err
+		}
+		if err := v.RegisterValidation("min_bytes", validateMinBytesLength); err != nil {
+			return nil, err
+		}
+		if err := v.RegisterValidation("max_bytes", validateMaxBytesLength); err != nil {
+			return nil, err
+		}
+		if err := v.RegisterValidation("user_role", validateUserRole); err != nil {
+			return nil, err
+		}
 	}
 
 	switch appConfig.Environment {
@@ -64,10 +73,18 @@ func NewRouter(
 			auth.POST("/login", authHandler.Login)
 			auth.POST("/refresh-session", jwtMiddleware, authHandler.RefreshSession)
 		}
+
 	}
-	return &Router{r, appConfig}
+	return &Router{&http.Server{
+		Addr:    appConfig.Port,
+		Handler: r,
+	}}, nil
 }
 
 func (r *Router) Start() error {
-	return r.Run(r.appConfig.Port)
+	return r.server.ListenAndServe()
+}
+
+func (r *Router) Shutdown(ctx context.Context) error {
+	return r.server.Shutdown(ctx)
 }
