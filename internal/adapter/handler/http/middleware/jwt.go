@@ -16,7 +16,7 @@ func JWTMiddleware(generator port.TokenGenerator, key string) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		header := c.GetHeader("Authorization")
 		if header == "" || !strings.HasPrefix(header, "Bearer ") {
-			response.HandleError(c, domain.ErrMalformedToken)
+			response.HandleError(c, domain.ErrInvalidToken)
 			c.Abort()
 			return
 		}

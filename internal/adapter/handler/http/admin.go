@@ -48,12 +48,12 @@ func NewAdminHandler(userService port.AdminService) *AdminHandler {
 func (h *AdminHandler) GetUsers(c *gin.Context) {
 	token, ok := c.Get("token")
 	if !ok {
-		response.HandleError(c, domain.ErrInternalServerError)
+		response.HandleError(c, domain.ErrInternal)
 		return
 	}
 	domainToken, ok := token.(*domain.Token)
 	if !ok {
-		response.HandleError(c, domain.ErrInternalServerError)
+		response.HandleError(c, domain.ErrInternal)
 		return
 	}
 	query := request.GetUserQuery{}
@@ -79,12 +79,12 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 		} else {
 			decoded, decodeErr := base64.URLEncoding.DecodeString(*query.Cursor)
 			if decodeErr != nil {
-				response.HandleError(c, domain.ErrInvalidCursorFormat)
+				response.HandleError(c, domain.ErrInvalidCursor)
 				return
 			}
 			parsedTime, decodeErr := time.Parse(time.RFC3339Nano, string(decoded))
 			if decodeErr != nil {
-				response.HandleError(c, domain.ErrInvalidCursorFormat)
+				response.HandleError(c, domain.ErrInvalidCursor)
 				return
 			}
 			after = &parsedTime
@@ -124,19 +124,19 @@ func (h *AdminHandler) GetUsers(c *gin.Context) {
 func (h *AdminHandler) UpdateUser(c *gin.Context) {
 	token, ok := c.Get("token")
 	if !ok {
-		response.HandleError(c, domain.ErrInternalServerError)
+		response.HandleError(c, domain.ErrInternal)
 		return
 	}
 	domainToken, ok := token.(*domain.Token)
 	if !ok {
-		response.HandleError(c, domain.ErrInternalServerError)
+		response.HandleError(c, domain.ErrInternal)
 		return
 	}
 
 	id := c.Param("id")
 	parsedId, err := uuid.Parse(id)
 	if err != nil {
-		response.HandleError(c, domain.ErrInvalidParam)
+		response.HandleError(c, domain.ErrInvalidUUID)
 		return
 	}
 

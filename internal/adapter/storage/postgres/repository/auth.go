@@ -41,7 +41,7 @@ func (t *TokenRepository) AddToken(ctx context.Context, token *domain.Token) err
 				zap.String("expiresAt", token.ExpiresAt.String()),
 				zap.Error(err),
 			)
-		return domain.ErrInternalServerError
+		return domain.ErrInternal
 	}
 	return nil
 }
@@ -55,7 +55,7 @@ func (t *TokenRepository) DeleteToken(ctx context.Context, id uuid.UUID) error {
 				zap.String("id", id.String()),
 				zap.Error(err),
 			)
-		return domain.ErrInternalServerError
+		return domain.ErrInternal
 	}
 
 	rowsAffected, err := result.RowsAffected()
@@ -65,7 +65,7 @@ func (t *TokenRepository) DeleteToken(ctx context.Context, id uuid.UUID) error {
 				"postgres/TokenRepository.DeleteToken failed getting affected rows",
 				zap.Error(err),
 			)
-		return domain.ErrInternalServerError
+		return domain.ErrInternal
 	}
 
 	if rowsAffected == 0 {
@@ -83,7 +83,7 @@ func (t *TokenRepository) DeleteAllTokensByUserId(ctx context.Context, userId uu
 				zap.String("userId", userId.String()),
 				zap.Error(err),
 			)
-		return domain.ErrInternalServerError
+		return domain.ErrInternal
 	}
 	return nil
 }
@@ -96,7 +96,7 @@ func (t *TokenRepository) DeleteExpiredTokens() error {
 				"postgres/TokenRepository.DeleteExpiredTokens failed",
 				zap.Error(err),
 			)
-		return domain.ErrInternalServerError
+		return domain.ErrInternal
 	}
 	return nil
 }

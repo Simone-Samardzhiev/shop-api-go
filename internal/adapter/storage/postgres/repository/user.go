@@ -57,7 +57,7 @@ func (r *UserRepository) AddUser(ctx context.Context, user *domain.User) error {
 				zap.String("updatedAt", user.UpdatedAt.String()),
 				zap.Error(err),
 			)
-		return domain.ErrInternalServerError
+		return domain.ErrInternal
 	}
 	return nil
 }
@@ -82,7 +82,7 @@ func (r *UserRepository) GetUserByUsername(ctx context.Context, username string)
 					zap.String("username", username),
 					zap.Error(err),
 				)
-			return nil, domain.ErrInternalServerError
+			return nil, domain.ErrInternal
 		}
 	}
 	return &user, nil
@@ -108,7 +108,7 @@ func (r *UserRepository) GetUserById(ctx context.Context, id uuid.UUID) (*domain
 				zap.String("id", id.String()),
 				zap.Error(err),
 			)
-		return nil, domain.ErrInternalServerError
+		return nil, domain.ErrInternal
 	}
 	return &user, nil
 }
@@ -132,7 +132,7 @@ func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, l
 				zap.Int("limit", limit),
 				zap.Error(err),
 			)
-		return nil, domain.ErrInternalServerError
+		return nil, domain.ErrInternal
 	}
 
 	defer func() {
@@ -156,7 +156,7 @@ func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, l
 					"postgres/UserRepository.GetUsersByOffestPagination failed scanning rwo",
 					zap.Error(scanErr),
 				)
-			return users, domain.ErrInternalServerError
+			return users, domain.ErrInternal
 		}
 
 		users = append(users, user)
@@ -185,7 +185,7 @@ func (r *UserRepository) GetUsersByTimePagination(ctx context.Context, after tim
 				zap.Int("limit", limit),
 				zap.Error(err),
 			)
-		return nil, domain.ErrInternalServerError
+		return nil, domain.ErrInternal
 	}
 
 	defer func() {
@@ -209,7 +209,7 @@ func (r *UserRepository) GetUsersByTimePagination(ctx context.Context, after tim
 					"postgres/UserRepository.GetUsersByTimePagination failed scanning row",
 					zap.Error(err),
 				)
-			return nil, domain.ErrInternalServerError
+			return nil, domain.ErrInternal
 		}
 		users = append(users, user)
 	}
@@ -237,7 +237,7 @@ func (r *UserRepository) SearchUserByUsername(ctx context.Context, username stri
 				zap.Int("limit", limit),
 				zap.Error(err),
 			)
-		return nil, domain.ErrInternalServerError
+		return nil, domain.ErrInternal
 	}
 
 	defer func() {
@@ -261,7 +261,7 @@ func (r *UserRepository) SearchUserByUsername(ctx context.Context, username stri
 					"postgres/UserRepository.SearchUserByUsername failed scanning row",
 					zap.Error(err),
 				)
-			return nil, domain.ErrInternalServerError
+			return nil, domain.ErrInternal
 		}
 		users = append(users, user)
 	}
@@ -290,7 +290,7 @@ func (r *UserRepository) SearchUserByEmail(ctx context.Context, email string, li
 				zap.Int("limit", limit),
 				zap.Error(err),
 			)
-		return nil, domain.ErrInternalServerError
+		return nil, domain.ErrInternal
 	}
 
 	defer func() {
@@ -314,7 +314,7 @@ func (r *UserRepository) SearchUserByEmail(ctx context.Context, email string, li
 					"postgres/UserRepository.SearchUserByEmail failed scanning row",
 					zap.Error(err),
 				)
-			return nil, domain.ErrInternalServerError
+			return nil, domain.ErrInternal
 		}
 
 		users = append(users, user)
@@ -365,7 +365,7 @@ func (r *UserRepository) UpdateUser(ctx context.Context, update *domain.UserUpda
 				"postgres/UserRepository.UpdateUser failed",
 				zapFields...,
 			)
-		return domain.ErrInternalServerError
+		return domain.ErrInternal
 	}
 
 	rowsAffected, err := result.RowsAffected()
@@ -375,7 +375,7 @@ func (r *UserRepository) UpdateUser(ctx context.Context, update *domain.UserUpda
 				"postgres/UserRepository.UpdateUser failed getting rows affected",
 				zap.Error(err),
 			)
-		return domain.ErrInternalServerError
+		return domain.ErrInternal
 	}
 
 	if rowsAffected == 0 {

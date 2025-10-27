@@ -90,7 +90,7 @@ func TestAuthService_Login(t *testing.T) {
 			name:               "error fetching user",
 			user:               &domain.User{},
 			expectedTokenGroup: nil,
-			expectedError:      domain.ErrInternalServerError,
+			expectedError:      domain.ErrInternal,
 			mockSetup: func(
 				mockTokenGenerator *mock.MockTokenGenerator,
 				mockPasswordHasher *mock.MockPasswordHasher,
@@ -102,7 +102,7 @@ func TestAuthService_Login(t *testing.T) {
 					GetUserByUsername(
 						gomock.AssignableToTypeOf(context.Background()),
 						gomock.AssignableToTypeOf("")).
-					Return(nil, domain.ErrInternalServerError)
+					Return(nil, domain.ErrInternal)
 			},
 		}, {
 			name: "password mismatch",
@@ -136,7 +136,7 @@ func TestAuthService_Login(t *testing.T) {
 				Password: "password",
 			},
 			expectedTokenGroup: nil,
-			expectedError:      domain.ErrInternalServerError,
+			expectedError:      domain.ErrInternal,
 			mockSetup: func(
 				mockTokenGenerator *mock.MockTokenGenerator,
 				mockPasswordHasher *mock.MockPasswordHasher,
@@ -158,7 +158,7 @@ func TestAuthService_Login(t *testing.T) {
 					mockTokenGenerator.
 						EXPECT().
 						SignToken(gomock.AssignableToTypeOf(&domain.Token{})).
-						Return("", domain.ErrInternalServerError),
+						Return("", domain.ErrInternal),
 				)
 			},
 		}, {
@@ -167,7 +167,7 @@ func TestAuthService_Login(t *testing.T) {
 				Password: "password",
 			},
 			expectedTokenGroup: nil,
-			expectedError:      domain.ErrInternalServerError,
+			expectedError:      domain.ErrInternal,
 			mockSetup: func(
 				mockTokenGenerator *mock.MockTokenGenerator,
 				mockPasswordHasher *mock.MockPasswordHasher,
@@ -193,7 +193,7 @@ func TestAuthService_Login(t *testing.T) {
 					mockTokenGenerator.
 						EXPECT().
 						SignToken(gomock.AssignableToTypeOf(&domain.Token{})).
-						Return("", domain.ErrInternalServerError),
+						Return("", domain.ErrInternal),
 				)
 			},
 		}, {
@@ -202,7 +202,7 @@ func TestAuthService_Login(t *testing.T) {
 				Password: "password",
 			},
 			expectedTokenGroup: nil,
-			expectedError:      domain.ErrInternalServerError,
+			expectedError:      domain.ErrInternal,
 			mockSetup: func(
 				mockTokenGenerator *mock.MockTokenGenerator,
 				mockPasswordHasher *mock.MockPasswordHasher,
@@ -236,7 +236,7 @@ func TestAuthService_Login(t *testing.T) {
 							gomock.AssignableToTypeOf(context.Background()),
 							gomock.AssignableToTypeOf(&domain.Token{}),
 						).
-						Return(domain.ErrInternalServerError),
+						Return(domain.ErrInternal),
 				)
 			},
 		},
@@ -332,7 +332,7 @@ func TestAuthService_RefreshSession(t *testing.T) {
 				TokenType: domain.RefreshToken,
 			},
 			expectedTokenGroup: nil,
-			expectedError:      domain.ErrInternalServerError,
+			expectedError:      domain.ErrInternal,
 			mockSetup: func(
 				mockTokenGenerator *mock.MockTokenGenerator,
 				mockPasswordHasher *mock.MockPasswordHasher,
@@ -344,7 +344,7 @@ func TestAuthService_RefreshSession(t *testing.T) {
 						gomock.AssignableToTypeOf(context.Background()),
 						gomock.AssignableToTypeOf(uuid.UUID{}),
 					).
-					Return(domain.ErrInternalServerError)
+					Return(domain.ErrInternal)
 			},
 		}, {
 			name: "error signing access token",
@@ -352,7 +352,7 @@ func TestAuthService_RefreshSession(t *testing.T) {
 				TokenType: domain.RefreshToken,
 			},
 			expectedTokenGroup: nil,
-			expectedError:      domain.ErrInternalServerError,
+			expectedError:      domain.ErrInternal,
 			mockSetup: func(
 				mockTokenGenerator *mock.MockTokenGenerator,
 				mockPasswordHasher *mock.MockPasswordHasher,
@@ -368,7 +368,7 @@ func TestAuthService_RefreshSession(t *testing.T) {
 					mockTokenGenerator.
 						EXPECT().
 						SignToken(gomock.AssignableToTypeOf(&domain.Token{})).
-						Return("", domain.ErrInternalServerError),
+						Return("", domain.ErrInternal),
 				)
 			},
 		}, {
@@ -377,7 +377,7 @@ func TestAuthService_RefreshSession(t *testing.T) {
 				TokenType: domain.RefreshToken,
 			},
 			expectedTokenGroup: nil,
-			expectedError:      domain.ErrInternalServerError,
+			expectedError:      domain.ErrInternal,
 			mockSetup: func(
 				mockTokenGenerator *mock.MockTokenGenerator,
 				mockPasswordHasher *mock.MockPasswordHasher,
@@ -397,7 +397,7 @@ func TestAuthService_RefreshSession(t *testing.T) {
 					mockTokenGenerator.
 						EXPECT().
 						SignToken(gomock.AssignableToTypeOf(&domain.Token{})).
-						Return("", domain.ErrInternalServerError),
+						Return("", domain.ErrInternal),
 				)
 			},
 		}, {
@@ -406,7 +406,7 @@ func TestAuthService_RefreshSession(t *testing.T) {
 				TokenType: domain.RefreshToken,
 			},
 			expectedTokenGroup: nil,
-			expectedError:      domain.ErrInternalServerError,
+			expectedError:      domain.ErrInternal,
 			mockSetup: func(
 				mockTokenGenerator *mock.MockTokenGenerator,
 				mockPasswordHasher *mock.MockPasswordHasher,
@@ -427,7 +427,7 @@ func TestAuthService_RefreshSession(t *testing.T) {
 					AddToken(
 						gomock.AssignableToTypeOf(context.Background()),
 						gomock.AssignableToTypeOf(&domain.Token{})).
-					Return(domain.ErrInternalServerError)
+					Return(domain.ErrInternal)
 			},
 		},
 	}

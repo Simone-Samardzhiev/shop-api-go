@@ -40,7 +40,7 @@ func (t *TokenGenerator) SignToken(token *domain.Token) (string, error) {
 		zap.L().Error("invalid token type",
 			zap.String("token_type", string(token.TokenType)),
 		)
-		return "", domain.ErrInternalServerError
+		return "", domain.ErrInternal
 	}
 
 	token.ExpiresAt = now.Add(exp)
@@ -61,7 +61,7 @@ func (t *TokenGenerator) SignToken(token *domain.Token) (string, error) {
 	signedToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims).SignedString(t.config.Secret)
 	if err != nil {
 		zap.L().Error("failed to sign token", zap.Error(err))
-		return "", domain.ErrInternalServerError
+		return "", domain.ErrInternal
 	}
 	return signedToken, nil
 }
@@ -88,11 +88,11 @@ func (t *TokenGenerator) ParseToken(token string) (*domain.Token, error) {
 
 	userId, err := uuid.Parse(jwtClaims.Subject)
 	if err != nil {
-		return nil, domain.ErrMalformedToken
+		return nil, domain.ErrInvalidToken
 	}
 	tokenId, err := uuid.Parse(jwtClaims.ID)
 	if err != nil {
-		return nil, domain.ErrMalformedToken
+		return nil, domain.ErrInvalidToken
 	}
 
 	return domain.NewToken(tokenId, userId, jwtClaims.UserRole, jwtClaims.TokenType, jwtClaims.ExpiresAt.Time), nil

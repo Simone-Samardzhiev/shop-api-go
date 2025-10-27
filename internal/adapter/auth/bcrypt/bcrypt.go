@@ -3,6 +3,7 @@ package bcrypt
 import (
 	"shop-api-go/internal/core/domain"
 
+	"go.uber.org/zap"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -11,8 +12,12 @@ type PasswordHasher struct{}
 
 func (p *PasswordHasher) Hash(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+	zap.L().Error(
+		"bcrypt hash failed",
+		zap.Error(err),
+	)
 	if err != nil {
-		return "", domain.ErrInternalServerError
+		return "", domain.ErrInternal
 	}
 	return string(hash), nil
 }

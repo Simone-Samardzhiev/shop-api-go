@@ -5,8 +5,8 @@ import (
 )
 
 var (
-	// ErrInternalServerError is an error for when the service fails to process the request.
-	ErrInternalServerError = errors.New("internal server error")
+	// ErrInternal is an error for when the service fails to process the request.
+	ErrInternal = errors.New("internal server error")
 	// ErrEmailAlreadyInUse is an error for when user's email conflicts with another.
 	ErrEmailAlreadyInUse = errors.New("email already in use")
 	// ErrUsernameAlreadyInUse is an error for when user's username conflicts with another.
@@ -21,10 +21,8 @@ var (
 	ErrInvalidQuery = errors.New("invalid query")
 	// ErrLimitNotSet is an error for when fetching data requires limit to be set.
 	ErrLimitNotSet = errors.New("limit not set")
-	// ErrInvalidCursorFormat is an error for when cursor format is unexpected.
-	ErrInvalidCursorFormat = errors.New("invalid cursor format")
-	// ErrInvalidParam is an error for when passed param is not valid.
-	ErrInvalidParam = errors.New("invalid param")
+	// ErrInvalidCursor is an error for when cursor format is unexpected.
+	ErrInvalidCursor = errors.New("invalid cursor format")
 	// ErrInvalidUUID is an error for when passed uuid is not valid.
 	ErrInvalidUUID = errors.New("invalid uuid")
 	// ErrInvalidToken is an error for when token parsing fails.
@@ -34,8 +32,6 @@ var (
 	// ErrInvalidTokenRole is an error for when user tries to access a resource,
 	// to which he doesn't have a precision to access.
 	ErrInvalidTokenRole = errors.New("invalid token role")
-	// ErrMalformedToken is an error for when token data is invalid.
-	ErrMalformedToken = errors.New("invalid token subject")
-	// ErrTokenNotFound  is an error for when token is expired or already user.
-	ErrTokenNotFound = errors.New("token expired or already user")
+	// ErrTokenNotFound  is an error for when token is not found.
+	ErrTokenNotFound = errors.New("token not found")
 )

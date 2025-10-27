@@ -19,22 +19,19 @@ type ErrorResponse struct {
 }
 
 var errMap = map[error]ErrorResponse{
-	domain.ErrInternalServerError: {
+	domain.ErrInternal: {
 		Code:       "INTERNAL_SERVER_ERROR",
 		Messages:   []string{"Server cannot process the request."},
 		statusCode: http.StatusInternalServerError,
-	},
-	domain.ErrEmailAlreadyInUse: {
+	}, domain.ErrEmailAlreadyInUse: {
 		Code:       "EMAIL_ALREADY_IN_USE",
 		Messages:   []string{"Email is already in use."},
 		statusCode: http.StatusConflict,
-	},
-	domain.ErrUsernameAlreadyInUse: {
+	}, domain.ErrUsernameAlreadyInUse: {
 		Code:       "USER_ALREADY_IN_USE",
 		Messages:   []string{"Username is already in use."},
 		statusCode: http.StatusConflict,
-	},
-	domain.ErrWrongCredentials: {
+	}, domain.ErrWrongCredentials: {
 		Code:       "WRONG_CREDENTIALS",
 		Messages:   []string{"Wrong credentials."},
 		statusCode: http.StatusUnauthorized,
@@ -50,13 +47,9 @@ var errMap = map[error]ErrorResponse{
 		Code:       "INVALID_QUERY",
 		Messages:   []string{"Invalid query."},
 		statusCode: http.StatusBadRequest,
-	}, domain.ErrInvalidCursorFormat: {
+	}, domain.ErrInvalidCursor: {
 		Code:       "INVALID_CURSOR_FORMAT",
 		Messages:   []string{"Invalid cursor format."},
-		statusCode: http.StatusBadRequest,
-	}, domain.ErrInvalidParam: {
-		Code:       "INVALID_PARAM",
-		Messages:   []string{"Invalid param."},
 		statusCode: http.StatusBadRequest,
 	}, domain.ErrInvalidUUID: {
 		Code:       "INVALID_UUID",
@@ -78,10 +71,6 @@ var errMap = map[error]ErrorResponse{
 		Code:       "INVALID_TOKEN_ROLE",
 		Messages:   []string{"Token role is invalid."},
 		statusCode: http.StatusForbidden,
-	}, domain.ErrMalformedToken: {
-		Code:       "MALFORMED_TOKEN",
-		Messages:   []string{"Token is malformed."},
-		statusCode: http.StatusUnauthorized,
 	}, domain.ErrTokenNotFound: {
 		Code:       "TOKEN_NOT_FOUND",
 		Messages:   []string{"Token not found."},

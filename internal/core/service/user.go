@@ -33,7 +33,7 @@ func (s *UserService) Register(ctx context.Context, user *domain.User) error {
 	user.Id = uuid.New()
 	hash, err := s.passwordHasher.Hash(user.Password)
 	if err != nil {
-		return domain.ErrInternalServerError
+		return domain.ErrInternal
 	}
 	user.Password = hash
 	return s.userRepository.AddUser(ctx, user)

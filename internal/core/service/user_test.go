@@ -60,7 +60,7 @@ func TestUserService_Register(t *testing.T) {
 			user: &domain.User{
 				Password: "password",
 			},
-			expectedError: domain.ErrInternalServerError,
+			expectedError: domain.ErrInternal,
 			mockSetup: func(
 				userRepository *mock.MockUserRepository,
 				passwordHasher *mock.MockPasswordHasher,
@@ -68,14 +68,14 @@ func TestUserService_Register(t *testing.T) {
 			) {
 				passwordHasher.EXPECT().
 					Hash("password").
-					Return("", domain.ErrInternalServerError)
+					Return("", domain.ErrInternal)
 			},
 		}, {
 			name: "error adding user",
 			user: &domain.User{
 				Password: "password",
 			},
-			expectedError: domain.ErrInternalServerError,
+			expectedError: domain.ErrInternal,
 			mockSetup: func(
 				userRepository *mock.MockUserRepository,
 				passwordHasher *mock.MockPasswordHasher,
@@ -94,7 +94,7 @@ func TestUserService_Register(t *testing.T) {
 							if user.Password != "hashedPassword" {
 								return errors.New("wrong password")
 							}
-							return domain.ErrInternalServerError
+							return domain.ErrInternal
 						}),
 				)
 
@@ -193,7 +193,7 @@ func TestUserService_UpdateAccount(t *testing.T) {
 				Password:    "password",
 				NewUsername: &newUsername,
 			},
-			expectedError: domain.ErrInternalServerError,
+			expectedError: domain.ErrInternal,
 			mockSetup: func(
 				mockUserRepository *mock.MockUserRepository,
 				mockPasswordHasher *mock.MockPasswordHasher,
@@ -206,7 +206,7 @@ func TestUserService_UpdateAccount(t *testing.T) {
 							gomock.AssignableToTypeOf(context.Background()),
 							gomock.Eq("username"),
 						).
-						Return(nil, domain.ErrInternalServerError),
+						Return(nil, domain.ErrInternal),
 				)
 			},
 		}, {
@@ -264,7 +264,7 @@ func TestUserService_UpdateAccount(t *testing.T) {
 				Password:    "password",
 				NewUsername: &newUsername,
 			},
-			expectedError: domain.ErrInternalServerError,
+			expectedError: domain.ErrInternal,
 			mockSetup: func(
 				mockUserRepository *mock.MockUserRepository,
 				mockPasswordHasher *mock.MockPasswordHasher,
@@ -292,7 +292,7 @@ func TestUserService_UpdateAccount(t *testing.T) {
 								Username: &newUsername,
 							}),
 						).
-						Return(domain.ErrInternalServerError),
+						Return(domain.ErrInternal),
 				)
 			},
 		}, {
@@ -302,7 +302,7 @@ func TestUserService_UpdateAccount(t *testing.T) {
 				Password:    "password",
 				NewUsername: &newUsername,
 			},
-			expectedError: domain.ErrInternalServerError,
+			expectedError: domain.ErrInternal,
 			mockSetup: func(
 				mockUserRepository *mock.MockUserRepository,
 				mockPasswordHasher *mock.MockPasswordHasher,
@@ -338,7 +338,7 @@ func TestUserService_UpdateAccount(t *testing.T) {
 							gomock.AssignableToTypeOf(context.Background()),
 							gomock.Eq(uuid.UUID{}),
 						).
-						Return(domain.ErrInternalServerError),
+						Return(domain.ErrInternal),
 				)
 			},
 		},

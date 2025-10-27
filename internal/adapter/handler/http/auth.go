@@ -66,13 +66,12 @@ func (h *AuthHandler) Login(c *gin.Context) {
 func (h *AuthHandler) RefreshSession(c *gin.Context) {
 	token, ok := c.Get("token")
 	if !ok {
-		response.HandleError(c, domain.ErrInternalServerError)
+		response.HandleError(c, domain.ErrInternal)
 		return
 	}
-
 	domainToken, ok := token.(*domain.Token)
 	if !ok {
-		response.HandleError(c, domain.ErrInternalServerError)
+		response.HandleError(c, domain.ErrInternal)
 		return
 	}
 
