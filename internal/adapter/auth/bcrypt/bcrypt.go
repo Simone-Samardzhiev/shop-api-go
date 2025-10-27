@@ -10,6 +10,11 @@ import (
 // PasswordHasher implements port.PasswordHasher and provides password hashing with bcrypt.
 type PasswordHasher struct{}
 
+// NewPasswordHasher creates a new PasswordHasher instance.
+func NewPasswordHasher() *PasswordHasher {
+	return &PasswordHasher{}
+}
+
 func (p *PasswordHasher) Hash(password string) (string, error) {
 	hash, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	zap.L().Error(

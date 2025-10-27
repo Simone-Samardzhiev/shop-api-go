@@ -30,10 +30,11 @@ func main() {
 		log.Fatalf("Error loading config: %v", err)
 	}
 
-	err = logger.SetLogger(container.App)
+	l, err := logger.New(container.App)
 	if err != nil {
-		log.Fatalf("Error setting logger: %v", err)
+		log.Fatalf("Error creating logger: %v", err)
 	}
+	zap.ReplaceGlobals(l)
 
 	db, err := postgres.New(container.Database)
 	if err != nil {
@@ -61,7 +62,7 @@ func main() {
 	tokenRepository := repository.NewTokenRepository(db)
 
 	jwtTokenGenerator := jwt.NewTokenGenerator(container.JWT)
-	passwordHasher := &bcrypt.PasswordHasher{}
+	passwordHasher := bcrypt.NewPasswordHasher()
 
 	userService := service.NewUserService(userRepository, passwordHasher, tokenRepository)
 	authService := service.NewAuthService(jwtTokenGenerator, passwordHasher, tokenRepository, userRepository)
@@ -75,9 +76,13 @@ func main() {
 	defer cancel()
 	tasks.StartDeleteExpiredTokensTask(ctx, tokenRepository, time.Hour)
 
-	router := http.NewRouter(container.App, jwtTokenGenerator, userHandler, adminHandler, authHandler)
+	router, err := http.NewRouter(container.App, jwtTokenGenerator, userHandler, adminHandler, authHandler)
+	if err != nil {
+		zap.L().Fatal("Error creating router", zap.Error(err))
+	}
+
 	err = router.Start()
 	if err != nil {
-		zap.L().Error("Error starting http server", zap.Error(err))
+		zap.L().Fatal("Error starting router", zap.Error(err))
 	}
 }
