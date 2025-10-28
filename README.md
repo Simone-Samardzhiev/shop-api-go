@@ -118,3 +118,10 @@ Follow these steps to run the API.
 - Product and inventory management
 - Order creation and checkout system
 - API rate limiting
+
+---
+
+## Development Tools
+
+- [Task](https://taskfile.dev) — for running project tasks easily
+- [golang-migrate](https://github.com/golang-migrate/migrate) — for database migrations
