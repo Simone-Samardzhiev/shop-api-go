@@ -5,33 +5,45 @@ import (
 )
 
 var (
-	// ErrInternal is an error for when the service fails to process the request.
-	ErrInternal = errors.New("internal server error")
-	// ErrEmailAlreadyInUse is an error for when user's email conflicts with another.
+	// ErrInternal represents a generic internal service failure.
+	ErrInternal = errors.New("internal error")
+
+	// ErrEmailAlreadyInUse indicates a user's email conflicts with another.
 	ErrEmailAlreadyInUse = errors.New("email already in use")
-	// ErrUsernameAlreadyInUse is an error for when user's username conflicts with another.
-	ErrUsernameAlreadyInUse = errors.New("username already exist")
-	// ErrWrongCredentials is an error for when user's credentials are wrong.
+
+	// ErrUsernameAlreadyInUse indicates a user's username conflicts with another.
+	ErrUsernameAlreadyInUse = errors.New("username already in use")
+
+	// ErrWrongCredentials indicates the provided credentials are incorrect.
 	ErrWrongCredentials = errors.New("wrong credentials")
-	// ErrUserNotFound is an error for when user couldn't be found.
+
+	// ErrUserNotFound indicates the requested user could not be found.
 	ErrUserNotFound = errors.New("user not found")
-	// ErrNoFieldsToUpdate is an error for when all update fields are empty(nil)
+
+	// ErrNoFieldsToUpdate indicates that no fields were provided for an update.
 	ErrNoFieldsToUpdate = errors.New("no fields to update")
-	// ErrInvalidQuery is an error for when passed query for fetching is invalid.
+
+	// ErrInvalidQuery indicates that the provided query parameters are invalid.
 	ErrInvalidQuery = errors.New("invalid query")
-	// ErrLimitNotSet is an error for when fetching data requires limit to be set.
+
+	// ErrLimitNotSet indicates that a required limit parameter was missing.
 	ErrLimitNotSet = errors.New("limit not set")
-	// ErrInvalidCursor is an error for when cursor format is unexpected.
+
+	// ErrInvalidCursor indicates that the provided cursor format is invalid.
 	ErrInvalidCursor = errors.New("invalid cursor format")
-	// ErrInvalidUUID is an error for when passed uuid is not valid.
+
+	// ErrInvalidUUID indicates that a provided UUID is not valid.
 	ErrInvalidUUID = errors.New("invalid uuid")
-	// ErrInvalidToken is an error for when token parsing fails.
+
+	// ErrInvalidToken indicates a failure to parse or validate a token.
 	ErrInvalidToken = errors.New("invalid token")
-	// ErrInvalidTokenType is an error for when user use invalid token type.
+
+	// ErrInvalidTokenType indicates the token type is not allowed for this action.
 	ErrInvalidTokenType = errors.New("invalid token type")
-	// ErrInvalidTokenRole is an error for when user tries to access a resource,
-	// to which he doesn't have a precision to access.
+
+	// ErrInvalidTokenRole indicates that the token's role does not have permission.
 	ErrInvalidTokenRole = errors.New("invalid token role")
-	// ErrTokenNotFound  is an error for when token is not found.
+
+	// ErrTokenNotFound indicates that the expected token was not found.
 	ErrTokenNotFound = errors.New("token not found")
 )
