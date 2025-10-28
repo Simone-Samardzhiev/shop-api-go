@@ -88,15 +88,6 @@ func HandleError(c *gin.Context, err error) {
 			statusCode: http.StatusInternalServerError,
 		}
 	}
-
-	zap.L().Error(
-		"HTTP request error",
-		zap.Int("status", res.statusCode),
-		zap.Strings("messages", res.Messages),
-		zap.String("Code", res.Code),
-		zap.Error(err),
-	)
-
 	c.JSON(res.statusCode, res)
 }
 

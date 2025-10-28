@@ -7,13 +7,13 @@ import (
 	"go.uber.org/zap"
 )
 
-var logger *zap.Logger
-
 // New sets Logger based on the passed config.AppConfig.
 func New(appConfig *config.AppConfig) (*zap.Logger, error) {
 	switch appConfig.Environment {
 	case config.Production:
-		return zap.NewProduction()
+		cnf := zap.NewProductionConfig()
+		cnf.DisableStacktrace = true
+		return cnf.Build()
 	case config.Development:
 		return zap.NewDevelopment()
 	default:

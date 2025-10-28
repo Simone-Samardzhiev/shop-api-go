@@ -11,23 +11,12 @@ import (
 func ZapLogger() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
+
 		c.Next()
 
 		latency := time.Since(start)
-		zapLevel := zap.InfoLevel
-		msg := "Handling request"
-		statusCode := c.Writer.Status()
 
-		switch {
-		case statusCode >= 500:
-			zapLevel = zap.ErrorLevel
-			msg = "Internal server error"
-		case statusCode >= 400:
-			zapLevel = zap.WarnLevel
-			msg = "Client error"
-		}
-
-		zap.L().Log(zapLevel, msg,
+		fields := []zap.Field{
 			zap.String("method", c.Request.Method),
 			zap.String("path", c.Request.URL.Path),
 			zap.String("query", c.Request.URL.RawQuery),
@@ -35,6 +24,14 @@ func ZapLogger() gin.HandlerFunc {
 			zap.Duration("latency", latency),
 			zap.Int("status", c.Writer.Status()),
 			zap.String("user-agent", c.Request.UserAgent()),
-		)
+		}
+		switch {
+		case c.Writer.Status() >= 500:
+			zap.L().Error("Server error", fields...)
+		case c.Writer.Status() >= 400:
+			zap.L().Warn("Client error", fields...)
+		default:
+			zap.L().Debug("Incoming request", fields...)
+		}
 	}
 }
