@@ -5,18 +5,18 @@ import (
 	"shop-api-go/internal/adapter/handler/http/request"
 	"shop-api-go/internal/adapter/handler/http/response"
 	"shop-api-go/internal/core/domain"
-	"shop-api-go/internal/core/service"
+	"shop-api-go/internal/core/port"
 
 	"github.com/gin-gonic/gin"
 )
 
 // UserHandler handles HTTP requests related to user operations.
 type UserHandler struct {
-	userService *service.UserService
+	userService port.UserService
 }
 
 // NewUserHandler returns a new UserHandler instance.
-func NewUserHandler(userService *service.UserService) *UserHandler {
+func NewUserHandler(userService port.UserService) *UserHandler {
 	return &UserHandler{
 		userService: userService,
 	}

@@ -7,8 +7,8 @@ import (
 	"go.uber.org/zap"
 )
 
-// New sets Logger based on the passed config.AppConfig.
-func New(appConfig *config.AppConfig) (*zap.Logger, error) {
+// NewZapLogger sets Logger based on the passed config.AppConfig.
+func NewZapLogger(appConfig *config.AppConfig) (*zap.Logger, error) {
 	switch appConfig.Environment {
 	case config.Production:
 		cnf := zap.NewProductionConfig()

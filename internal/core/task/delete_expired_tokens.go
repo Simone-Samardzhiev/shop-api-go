@@ -1,4 +1,4 @@
-package tasks
+package task
 
 import (
 	"context"
@@ -21,6 +21,7 @@ func StartDeleteExpiredTokensTask(ctx context.Context, tokenRepository port.Toke
 				}
 			case <-ctx.Done():
 				zap.L().Info("Stoping expired token clean up task")
+				return
 			}
 		}
 	}()
