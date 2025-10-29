@@ -49,12 +49,10 @@ func (r *UserRepository) AddUser(ctx context.Context, user *domain.User) error {
 
 		zap.L().
 			Error(
-				"postgres/UserRepository.AddUser failed",
+				"adding user failed",
 				zap.String("id", user.Id.String()),
 				zap.String("username", user.Username),
 				zap.String("email", user.Email),
-				zap.String("createdAt", user.CreatedAt.String()),
-				zap.String("updatedAt", user.UpdatedAt.String()),
 				zap.Error(err),
 			)
 		return domain.ErrInternal
@@ -78,7 +76,7 @@ func (r *UserRepository) GetUserByUsername(ctx context.Context, username string)
 		} else {
 			zap.L().
 				Error(
-					"postgres/UserRepository.GetUserByUsername failed",
+					"fetching user failed",
 					zap.String("username", username),
 					zap.Error(err),
 				)
@@ -104,7 +102,7 @@ func (r *UserRepository) GetUserById(ctx context.Context, id uuid.UUID) (*domain
 	} else if err != nil {
 		zap.L().
 			Error(
-				"postgres/UserRepository.GetUserById failed",
+				"fetching user failed",
 				zap.String("id", id.String()),
 				zap.Error(err),
 			)
@@ -127,7 +125,7 @@ func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, l
 	if err != nil {
 		zap.L().
 			Error(
-				"postgres/UserRepository.GetUsersByOffestPagination failed",
+				"fetching users failed",
 				zap.Int("page", page),
 				zap.Int("limit", limit),
 				zap.Error(err),
@@ -140,7 +138,7 @@ func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, l
 		if closeErr != nil {
 			zap.L().
 				Error(
-					"postgres/UserRepository.GetUsersByOffestPagination failed closing rows",
+					"closing rows failed",
 					zap.Error(closeErr),
 				)
 		}
@@ -153,7 +151,7 @@ func (r *UserRepository) GetUsersByOffestPagination(ctx context.Context, page, l
 		if scanErr != nil {
 			zap.L().
 				Error(
-					"postgres/UserRepository.GetUsersByOffestPagination failed scanning rwo",
+					"error parsing row",
 					zap.Error(scanErr),
 				)
 			return users, domain.ErrInternal
@@ -180,7 +178,7 @@ func (r *UserRepository) GetUsersByTimePagination(ctx context.Context, after tim
 	if err != nil {
 		zap.L().
 			Error(
-				"postgres/UserRepository.GetUsersByTimePagination failed",
+				"error fetching users",
 				zap.Time("after", after),
 				zap.Int("limit", limit),
 				zap.Error(err),
@@ -193,7 +191,7 @@ func (r *UserRepository) GetUsersByTimePagination(ctx context.Context, after tim
 		if closeErr != nil {
 			zap.L().
 				Error(
-					"postgres/UserRepository.GetUsersByTimePagination failed closing rows",
+					"error closing rows",
 					zap.Error(closeErr),
 				)
 		}
@@ -206,7 +204,7 @@ func (r *UserRepository) GetUsersByTimePagination(ctx context.Context, after tim
 		if err != nil {
 			zap.L().
 				Error(
-					"postgres/UserRepository.GetUsersByTimePagination failed scanning row",
+					"error parsing row",
 					zap.Error(err),
 				)
 			return nil, domain.ErrInternal
@@ -232,7 +230,7 @@ func (r *UserRepository) SearchUserByUsername(ctx context.Context, username stri
 	if err != nil {
 		zap.L().
 			Error(
-				"postgres/UserRepository.SearchUserByUsername failed",
+				"error searching for user",
 				zap.String("username", username),
 				zap.Int("limit", limit),
 				zap.Error(err),
@@ -245,7 +243,7 @@ func (r *UserRepository) SearchUserByUsername(ctx context.Context, username stri
 		if closeErr != nil {
 			zap.L().
 				Error(
-					"postgres/UserRepository.SearchUserByUsername failed closing rows",
+					"error closing rows",
 					zap.Error(closeErr),
 				)
 		}
@@ -258,7 +256,7 @@ func (r *UserRepository) SearchUserByUsername(ctx context.Context, username stri
 		if err != nil {
 			zap.L().
 				Error(
-					"postgres/UserRepository.SearchUserByUsername failed scanning row",
+					"error parsing row",
 					zap.Error(err),
 				)
 			return nil, domain.ErrInternal
@@ -285,7 +283,7 @@ func (r *UserRepository) SearchUserByEmail(ctx context.Context, email string, li
 	if err != nil {
 		zap.L().
 			Error(
-				"postgres/UserRepository.SearchUserByEmail failed",
+				"error searching for user",
 				zap.String("email", email),
 				zap.Int("limit", limit),
 				zap.Error(err),
@@ -298,7 +296,7 @@ func (r *UserRepository) SearchUserByEmail(ctx context.Context, email string, li
 		if closeErr != nil {
 			zap.L().
 				Error(
-					"postgres/UserRepository.SearchUserByEmail failed closing rows",
+					"error closing rows",
 					zap.Error(closeErr),
 				)
 		}
@@ -311,7 +309,7 @@ func (r *UserRepository) SearchUserByEmail(ctx context.Context, email string, li
 		if err != nil {
 			zap.L().
 				Error(
-					"postgres/UserRepository.SearchUserByEmail failed scanning row",
+					"error parsing row",
 					zap.Error(err),
 				)
 			return nil, domain.ErrInternal
@@ -362,7 +360,7 @@ func (r *UserRepository) UpdateUser(ctx context.Context, update *domain.UserUpda
 
 		zap.L().
 			Error(
-				"postgres/UserRepository.UpdateUser failed",
+				"error updating user",
 				zapFields...,
 			)
 		return domain.ErrInternal
@@ -372,7 +370,7 @@ func (r *UserRepository) UpdateUser(ctx context.Context, update *domain.UserUpda
 	if err != nil {
 		zap.L().
 			Error(
-				"postgres/UserRepository.UpdateUser failed getting rows affected",
+				"error getting rows affected",
 				zap.Error(err),
 			)
 		return domain.ErrInternal

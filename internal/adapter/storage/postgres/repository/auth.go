@@ -33,12 +33,11 @@ func (t *TokenRepository) AddToken(ctx context.Context, token *domain.Token) err
 	if err != nil {
 		zap.L().
 			Error(
-				"postgres/TokenRepository.AddToken failed",
+				"failed to insert token",
 				zap.String("tokenId", token.Id.String()),
 				zap.String("userId", token.UserId.String()),
 				zap.String("tokenType", string(token.TokenType)),
 				zap.String("userRole", string(token.UserRole)),
-				zap.String("expiresAt", token.ExpiresAt.String()),
 				zap.Error(err),
 			)
 		return domain.ErrInternal
@@ -51,7 +50,7 @@ func (t *TokenRepository) DeleteToken(ctx context.Context, id uuid.UUID) error {
 	if err != nil {
 		zap.L().
 			Error(
-				"postgres/TokenRepository.DeleteToken failed",
+				"failed to delete token",
 				zap.String("id", id.String()),
 				zap.Error(err),
 			)
@@ -62,7 +61,7 @@ func (t *TokenRepository) DeleteToken(ctx context.Context, id uuid.UUID) error {
 	if err != nil {
 		zap.L().
 			Error(
-				"postgres/TokenRepository.DeleteToken failed getting affected rows",
+				"failed to retrieve rows affected",
 				zap.Error(err),
 			)
 		return domain.ErrInternal
@@ -79,7 +78,7 @@ func (t *TokenRepository) DeleteAllTokensByUserId(ctx context.Context, userId uu
 	if err != nil {
 		zap.L().
 			Error(
-				"postgres/TokenRepository.DeleteAllTokensByUserId failed",
+				"failed to delete all tokens",
 				zap.String("userId", userId.String()),
 				zap.Error(err),
 			)
@@ -93,7 +92,7 @@ func (t *TokenRepository) DeleteExpiredTokens() error {
 	if err != nil {
 		zap.L().
 			Error(
-				"postgres/TokenRepository.DeleteExpiredTokens failed",
+				"failed to delete expired tokens",
 				zap.Error(err),
 			)
 		return domain.ErrInternal

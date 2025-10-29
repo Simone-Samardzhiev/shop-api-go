@@ -14,14 +14,10 @@ func StartDeleteExpiredTokensTask(ctx context.Context, tokenRepository port.Toke
 		for {
 			select {
 			case <-ticker.C:
-				zap.L().Info("Deleting expired tokens")
-				err := tokenRepository.DeleteExpiredTokens()
-				if err != nil {
-					zap.L().Error("Error deleting expired tokens", zap.Error(err))
-				}
+				zap.L().Info("deleting expired tokens")
+				_ = tokenRepository.DeleteExpiredTokens()
 			case <-ctx.Done():
-				zap.L().Info("Stoping expired token clean up task")
-				return
+				zap.L().Info("stoping expired token clean up task")
 			}
 		}
 	}()

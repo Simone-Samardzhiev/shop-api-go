@@ -37,7 +37,8 @@ func (t *TokenGenerator) SignToken(token *domain.Token) (string, error) {
 	case domain.RefreshToken:
 		exp = t.config.RefreshTokenExpireTime
 	default:
-		zap.L().Error("invalid token type",
+		zap.L().Error(
+			"invalid token type",
 			zap.String("token_type", string(token.TokenType)),
 		)
 		return "", domain.ErrInternal
@@ -60,7 +61,10 @@ func (t *TokenGenerator) SignToken(token *domain.Token) (string, error) {
 
 	signedToken, err := jwt.NewWithClaims(jwt.SigningMethodHS256, jwtClaims).SignedString(t.config.Secret)
 	if err != nil {
-		zap.L().Error("failed to sign token", zap.Error(err))
+		zap.L().Error(
+			"error signing token",
+			zap.Error(err),
+		)
 		return "", domain.ErrInternal
 	}
 	return signedToken, nil
@@ -69,9 +73,6 @@ func (t *TokenGenerator) SignToken(token *domain.Token) (string, error) {
 func (t *TokenGenerator) ParseToken(token string) (*domain.Token, error) {
 	parsedToken, err := jwt.ParseWithClaims(token, &claims{}, func(token *jwt.Token) (any, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			zap.L().Error("Unexpected signing method",
-				zap.String("method", token.Method.Alg()),
-			)
 			return nil, domain.ErrInvalidToken
 		}
 		return t.config.Secret, nil
